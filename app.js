@@ -3,7 +3,8 @@ const app = express();
 const dotenv = require('dotenv');
 const path = require('path');
 const cors = require('cors');
-
+const admin = require('./routes/adminRoutes')
+const category = require('./routes/categoryRoutes')
 
 dotenv.config();
 
@@ -13,9 +14,15 @@ app.use(cors({ origin: true }));
 
 
 
-
 const port = process.env.PORT || 4000;
 const ipAddress = '127.0.0.1';
+
+
+
+//Routes
+app.use('/api/admin',admin)
+app.use('/api/category',category)
+
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
