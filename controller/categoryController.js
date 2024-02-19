@@ -97,13 +97,11 @@ const ListCategory = async (req, res) => {
     });
   } catch (error) {
     console.error("Error adding subcategory:", error);
-    res
-      .status(500)
-      .json({
-        status: 500,
-        error: "Failed to add subcategory",
-        stack: error.stack,
-      });
+    res.status(500).json({
+      status: 500,
+      error: "Failed to add subcategory",
+      stack: error.stack,
+    });
   }
 };
 

@@ -54,9 +54,28 @@ const Subcategoryadd = Joi.object({
   };
 
 
+  const sellergister = Joi.object({
+    username: Joi.string().required(),
+    password: Joi.string().required(), 
+    category_id: Joi.number().required(), 
+    technology_name: Joi.string().required(), 
+
+  });
+  
+  const validateSeller = (req, res, next) => {
+  
+    const { error } = sellergister.validate(req.body);
+  
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+  
+    next();
+  };
 
   module.exports ={
     validatevalue,
     validatecategory,
-    validateSubcategory
+    validateSubcategory,
+    validateSeller
   }
