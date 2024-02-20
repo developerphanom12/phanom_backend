@@ -24,5 +24,8 @@ router.post('/gigstexteditor',validatecontentschema, authentication, sellercontr
 router.post('/imageUpload', authentication,upload.fields([{ name: 'image1' }, { name: 'image2' },{ name: 'image3' }, { name: 'vedio' }]), sellercontroller.addingmediaGigs);
 
 
+router.get('/list',sellercontroller.listdata);
+
+
 module.exports = router;
 

@@ -2,8 +2,6 @@ const sellerService = require("../service/sellerService");
 const bcrypt = require("bcrypt");
 let saltRounds = 10;
 
-
-
 const createseller = async (req, res) => {
   try {
     const { username, password, category_id, technology_name } = req.body;
@@ -61,8 +59,7 @@ const addgigadata = async (req, res) => {
       .json({ status: 403, error: "Forbidden for regular users" });
   }
 
-  const { gig_title, category_id, subcategory_id, service_type, tags } =
-    req.body;
+  const { gig_title, category_id, subcategory_id, service_type, tags } = req.body;
   try {
     const catId = await sellerService.checkcatid(category_id);
     if (!catId) {
@@ -301,41 +298,47 @@ const addingContent = async (req, res) => {
     });
   }
 };
+
 const addingmediaGigs = async (req, res) => {
   if (req.user.role !== "seller") {
-    return res.status(403).json({ status: 403, error: "Forbidden for regular users" });
+    return res
+      .status(403)
+      .json({ status: 403, error: "Forbidden for regular users" });
   }
 
-  const { gig_id} = req.body;
-  const { image1, image2, image3,vedio } = req.files;
+  const { gig_id } = req.body;
+  const { image1, image2, image3, vedio } = req.files;
 
-  console.log("Image 1 path:", image1[0].path);
-  console.log("Image 2 path:", image2[0].path);
-  console.log("Image 3 path:", image3[0].path);
-  console.log("Video path:", vedio);
-
-  if (!isValidImagePath(image1[0].path) || !isValidImagePath(image2[0].path) || !isValidImagePath(image3[0].path) || !isValidImagePath(vedio[0].path)) {
-    return res.status(400).json({ status: 400, error: "Invalid image paths  " });
+  if (
+    !isValidImagePath(image1[0].path) ||
+    !isValidImagePath(image2[0].path) ||
+    !isValidImagePath(image3[0].path) ||
+    !isValidvedioPath(vedio[0].path)
+  ) {
+    return res
+      .status(400)
+      .json({ status: 400, error: "Invalid image paths  " });
   }
 
+  const image1Folder = image1[0].path.split("/")[1];
+  const image2Folder = image2[0].path.split("/")[1];
+  const image3Folder = image3[0].path.split("/")[1];
+  const vedioFolder = vedio[0].path.split("/")[1];
 
-  const image1Folder = image1[0].path.split('/')[1]; 
-  const image2Folder = image2[0].path.split('/')[1];
-  const image3Folder = image3[0].path.split('/')[1];
-  const vedioFolder =  vedio[0].path.split('/')[1];
-
-  const data = { 
-    gig_id, 
+  const data = {
+    gig_id,
     image1: image1Folder,
-    image2:image2Folder,
+    image2: image2Folder,
     image3: image3Folder,
-    vedio :vedioFolder
+    vedio: vedioFolder,
   };
 
   try {
     const catId = await sellerService.checkGigid(gig_id);
     if (!catId) {
-      return res.status(404).json({ status: 404, message: "Category not found" });
+      return res
+        .status(404)
+        .json({ status: 404, message: "Category not found" });
     }
 
     const userid = await sellerService.addmediadata(data);
@@ -347,30 +350,76 @@ const addingmediaGigs = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in add gigs:", error);
-    res.status(500).json({ status: 500, error: "Failed to add gigs", stack: error.stack });
+    res
+      .status(500)
+      .json({ status: 500, error: "Failed to add gigs", stack: error.stack });
   }
 };
 
 function isValidImagePath(path) {
-  if (typeof path !== 'string') {
+  if (typeof path !== "string") {
     return false;
   }
-  
+
   const trimmedPath = path.trim();
-  
-  if (trimmedPath === '') {
+
+  if (trimmedPath === "") {
     return false;
   }
 
-  const validExtensions = ['.jpg', '.jpeg', '.png'];
+  const validExtensions = [".jpg", ".jpeg", ".png"];
   const lowercasePath = trimmedPath.toLowerCase();
-  if (!validExtensions.some(ext => lowercasePath.endsWith(ext))) {
+  if (!validExtensions.some((ext) => lowercasePath.endsWith(ext))) {
     return false;
   }
 
-  console.log("ddd",lowercasePath)
+  console.log("ddd", lowercasePath);
   return true;
 }
+
+function isValidvedioPath(path) {
+  if (typeof path !== "string") {
+    return false;
+  }
+
+  const trimmedPath = path.trim();
+
+  if (trimmedPath === "") {
+    return false;
+  }
+
+  const validExtensions = [".mp4", ".mov"];
+  const lowercasePath = trimmedPath.toLowerCase();
+  if (!validExtensions.some((ext) => lowercasePath.endsWith(ext))) {
+    return false;
+  }
+
+  console.log("ddd", lowercasePath);
+  return true;
+}
+
+
+const listdata = async (req, res) => {
+  try {
+    const data = await sellerService.listgigsdata();
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ status: 404, error: "Data not found" });
+    }
+    res.status(201).json({
+      status: 201,
+      message: data,
+    });
+  } catch (error) {
+    console.error("Error adding subcategory:", error);
+    res.status(500).json({
+      status: 500,
+      error: "Failed to add subcategory",
+      stack: error.stack,
+    });
+  }
+};
+
 
 module.exports = {
   createseller,
@@ -380,5 +429,6 @@ module.exports = {
   addingGigsPrice,
   addgigsQuestion,
   addingContent,
-  addingmediaGigs
+  addingmediaGigs,
+  listdata
 };

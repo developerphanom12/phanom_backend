@@ -278,9 +278,9 @@ function insertPriceData(data) {
     plugin_extension,
     price,
     plan_type,
-    content_upload
+    content_upload,
   } = data;
-  
+
   return new Promise((resolve, reject) => {
     if (
       !gig_id ||
@@ -326,8 +326,6 @@ function insertPriceData(data) {
   });
 }
 
-
-
 async function gigsQuestion(gig_id, questionsAnswers) {
   const query = `
     INSERT INTO  gigs_question 
@@ -358,17 +356,11 @@ async function gigsQuestion(gig_id, questionsAnswers) {
   }
 }
 
-
 function addCOntentforgigs(data) {
-  const {
-    gig_id,
-    content
-  } = data;
-  
+  const { gig_id, content } = data;
+
   return new Promise((resolve, reject) => {
-    if (
-      !gig_id || !content 
-    ) {
+    if (!gig_id || !content) {
       return reject(new Error("Missing required parameters"));
     }
 
@@ -379,10 +371,30 @@ function addCOntentforgigs(data) {
     `;
 
     console.log("Executing query:", query);
-    const values = [
-      gig_id,
-     content
-    ];
+    const values = [gig_id, content];
+
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error("Error in insert query:", err);
+        return reject(err);
+      }
+      resolve(result.insertId);
+    });
+  });
+}
+
+function addmediadata(data) {
+  const { gig_id, image1, image2, image3, vedio } = data;
+
+  return new Promise((resolve, reject) => {
+    const query = `
+      INSERT INTO gigs_imagedata 
+      (gig_id,image1,image2,image3,vedio)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    console.log("Executing query:", query);
+    const values = [gig_id, image1, image2, image3, vedio];
 
     db.query(query, values, (err, result) => {
       if (err) {
@@ -395,40 +407,121 @@ function addCOntentforgigs(data) {
 }
 
 
-
-
-
-function addmediadata(data) {
-  const {
-    gig_id,
-    image1,
-    image2,
-    image3,
-    vedio
-  } = data;
-  
+function listgigsdata() {
   return new Promise((resolve, reject) => {
     const query = `
-      INSERT INTO gigs_imagedata 
-      (gig_id,image1,image2,image3,vedio)
-      VALUES (?, ?, ?, ?, ?)
+      SELECT DISTINCT
+          c.id as gigs_id,
+          c.gig_title,
+          c.category_id,
+          c.subcategory_id,
+          c.service_type,
+          c.tags,
+          c.seller_id,
+          c.create_date,
+          c.update_date,
+          s.id as seller_id,
+          s.username,
+          ci.id as category_id,
+          ci.category_name,
+          u.id as plan_id,
+          u.gig_id,
+          u.title,
+          u.description,
+          u.delivery_time,
+          u.number_of_pages,
+          u.revision,
+          u.plugin_extension,
+          u.price,
+          u.plan_type,
+          u.content_upload,
+          u.create_date,
+          u.update_date,
+          sub.id as subcategory_id,
+          sub.category_id,
+          sub.name,
+          pu.id as program_id,
+          pu.gig_id,
+          pu.programing_language,
+          pu.create_date as program_create_date,
+          pu.update_date as program_update_date
+      FROM  gigs_create c
+      LEFT JOIN  gigs_plantype u ON c.id = u.gig_id
+      LEFT JOIN  seller s ON c.seller_id = s.id
+      LEFT JOIN  category ci ON c.category_id = ci.id
+      LEFT JOIN  sub_category sub ON c.subcategory_id = sub.id
+      LEFT JOIN  gigs_programlang pu ON c.id = pu.gig_id
     `;
 
-    console.log("Executing query:", query);
-    const values = [
-      gig_id,
-     image1,
-     image2,
-     image3,
-     vedio
-    ];
+    db.query(query, (error, results) => {
+      if (error) {
+        console.error("Error executing query:", error);
+        reject(error);
+      } else {
+        const gigsMap = new Map();
 
-    db.query(query, values, (err, result) => {
-      if (err) {
-        console.error("Error in insert query:", err);
-        return reject(err);
+        results.forEach((result) => {
+          const gigsId = result.gigs_id;
+
+          if (!gigsMap.has(gigsId)) {
+            gigsMap.set(gigsId, {
+              gigs_id: gigsId,
+              gig_title: result.gig_title,
+              service_type: result.service_type,
+              tags: result.tags,
+              create_date: result.create_date,
+              update_date: result.update_date,
+              seller: {
+                seller_id: result.seller_id,
+                username: result.username,
+              },
+              category: {
+                category_id: result.category_id,
+                category_name: result.category_name,
+              },
+              subcategory: {
+                subcategory_id: result.subcategory_id,
+                category_id: result.category_id,
+                name: result.name,
+              },
+              plantypes: [],
+              programing: [],
+            });
+          }
+
+          gigsMap.get(gigsId).programing.push({
+            program_id: result.program_id,
+            gig_id: result.gig_id,
+            programing_language: result.programing_language,
+            create_date: result.program_create_date,
+            update_date: result.program_update_date,
+          });
+
+          gigsMap.get(gigsId).plantypes.push({
+            plan_id: result.plan_id,
+            gig_id: result.gig_id,
+            title: result.title,
+            description: result.description,
+            delivery_time: result.delivery_time,
+            number_of_pages: result.number_of_pages,
+            revision: result.revision,
+            plugin_extension: result.plugin_extension,
+            plan_type: result.plan_type,
+            content_upload: result.content_upload,
+            create_date: result.create_date,
+            update_date: result.update_date,
+          });
+        });
+
+        const categoriesWithSubcategories = Array.from(gigsMap.values());
+
+        if (categoriesWithSubcategories.length === 0) {
+          resolve(null);
+        } else {
+          resolve(categoriesWithSubcategories);
+          console.log("Data retrieved successfully");
+        }
       }
-      resolve(result.insertId);
     });
   });
 }
@@ -447,5 +540,6 @@ module.exports = {
   insertPriceData,
   gigsQuestion,
   addCOntentforgigs,
-  addmediadata
+  addmediadata,
+  listgigsdata,
 };
