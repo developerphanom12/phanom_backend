@@ -44,7 +44,8 @@ const createseller = async (req, res) => {
     console.error("Error in add seller:", error);
     res.status(500).json({
       status: 500,
-      error: "Failed to add seller",
+      error: "Failed to create seller",
+      message: error.message, 
       stack: error.stack,
     });
   }
@@ -93,7 +94,8 @@ const addgigadata = async (req, res) => {
     console.error("Error in add gigs:", error);
     res.status(500).json({
       status: 500,
-      error: "Failed to add gigs",
+      error: "Failed to create gigs data ",
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -123,9 +125,12 @@ const loginseller = async (req, res) => {
     });
   } catch (error) {
     console.error("Error logging in seller:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to register seller", stack: error.stack });
+    res.status(500).json({
+      status: 500,
+      error: "Failed to login seller",
+      message: error.message,
+      stack: error.stack,
+    });
   }
 };
 
@@ -155,10 +160,11 @@ const addingarraydata = async (req, res) => {
       data: userId,
     });
   } catch (error) {
-    console.error("Error in add gigs:", error);
+    console.error("Error in add Programming language:", error);
     res.status(500).json({
       status: 500,
-      error: "Failed to add gigs",
+      error: "Failed to add multi data of programing language",
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -211,10 +217,11 @@ const addingGigsPrice = async (req, res) => {
       data: userid,
     });
   } catch (error) {
-    console.error("Error in add gigs:", error);
+    console.error("Error in add Price:", error);
     res.status(500).json({
       status: 500,
-      error: "Failed to add gigs",
+      error: "Failed to add Price data ",
+      message: error.message, 
       stack: error.stack,
     });
   }
@@ -252,10 +259,11 @@ const addgigsQuestion = async (req, res) => {
       data: userId,
     });
   } catch (error) {
-    console.error("Error in add gigs:", error);
+    console.error("Error in add Question:", error);
     res.status(500).json({
       status: 500,
-      error: "Failed to add gigs",
+      error: "Failed to add Question",
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -290,10 +298,11 @@ const addingContent = async (req, res) => {
       data: userid,
     });
   } catch (error) {
-    console.error("Error in add gigs:", error);
+    console.error("Error in add COntent:", error);
     res.status(500).json({
       status: 500,
-      error: "Failed to add gigs",
+      error: "Failed to add Content",
+      message: error.message, 
       stack: error.stack,
     });
   }
@@ -349,10 +358,13 @@ const addingmediaGigs = async (req, res) => {
       data: userid,
     });
   } catch (error) {
-    console.error("Error in add gigs:", error);
-    res
-      .status(500)
-      .json({ status: 500, error: "Failed to add gigs", stack: error.stack });
+    console.error("Error in add vedio images:", error);
+    res.status(500).json({
+      status: 500,
+      error: "Failed to add vedio images",
+      message: error.message, 
+      stack: error.stack,
+    });
   }
 };
 
@@ -399,15 +411,48 @@ function isValidvedioPath(path) {
 }
 
 
+
 const listdata = async (req, res) => {
+  const gigId = req.params.id;
+
+  if(!gigId){
+    res.status(404).json({message:'please provide Id',status:404}) 
+  }
   try {
-    const data = await sellerService.listgigsdata();
+    const data = await sellerService.listgigsdata(gigId);
 
     if (!data || data.length === 0) {
       return res.status(404).json({ status: 404, error: "Data not found" });
     }
     res.status(201).json({
-      status: 201,
+      status: 201, 
+      message: data,
+    });
+  } catch (error) {
+    console.error("Error to get data:", error);
+    res.status(500).json({
+      status: 500,
+      error: "failed to get data ",
+      message: error.message, 
+      stack: error.stack,
+    });
+  }
+};
+
+
+
+
+const subcateogydata = async (req, res) => {
+  const subId = req.params.id;
+
+  try {
+    const data = await sellerService.getSubcategoryId(subId);
+   console.log("dtatata",data)
+    if (!data || data.length === 0) {
+      return res.status(404).json({ status: 404, error: "Data not found" });
+    }
+    res.status(201).json({
+      status: 201, 
       message: data,
     });
   } catch (error) {
@@ -415,6 +460,47 @@ const listdata = async (req, res) => {
     res.status(500).json({
       status: 500,
       error: "Failed to add subcategory",
+      stack: error.stack,
+    });
+  }
+};
+
+
+const addingrating = async (req, res) => {
+  const userId = req.user.id;
+
+  if (req.user.role !== "seller") {
+    return res
+      .status(403)
+      .json({ status: 403, error: "Forbidden for regular users" });
+  }
+
+  const { gig_id,rating } = req.body;
+  try {
+
+    const ratings = {gig_id,rating}
+
+    const categoryids = await sellerService.checkGigid(gig_id);
+    if (!categoryids) {
+      return res
+        .status(404)
+        .json({ status: 404, message: "Gig id not found" });
+    }
+
+    
+    const userid = await sellerService.insertRating( ratings ,userId);
+
+    res.status(201).json({
+      message: "Data added successfully",
+      status: 201,
+      data: userid,
+    });
+  } catch (error) {
+    console.error("Error in add rating of gigs:", error);
+    res.status(500).json({
+      status: 500,
+      error: "Failed to add rating",
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -430,5 +516,7 @@ module.exports = {
   addgigsQuestion,
   addingContent,
   addingmediaGigs,
-  listdata
+  listdata,
+  subcateogydata,
+  addingrating
 };

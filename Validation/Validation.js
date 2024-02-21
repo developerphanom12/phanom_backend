@@ -207,6 +207,23 @@ const validatecontentschema = (req, res, next) => {
 
 
 
+const gigsrating = Joi.object({
+  gig_id: Joi.number().required(), 
+  rating: Joi.number().min(1).max(5).precision(1).required(),
+});
+
+const validaterating = (req, res, next) => {
+
+  const { error } = gigsrating.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  next();
+};
+
+
   module.exports ={
     validatevalue,
     validatecategory,
@@ -217,5 +234,6 @@ const validatecontentschema = (req, res, next) => {
     validateaaraydata,
     validategigs,
     validatequestionSchema,
-    validatecontentschema
+    validatecontentschema,
+    validaterating
   }

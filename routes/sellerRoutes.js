@@ -1,7 +1,7 @@
 const  express = require('express')
 const router = express.Router();
 const sellercontroller = require('../controller/sellerController');
-const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema} = require('../Validation/Validation');
+const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema, validaterating} = require('../Validation/Validation');
 const authentication = require('../Middleware/Authentication');
 const { upload } = require('../Middleware/Multer');
 
@@ -24,7 +24,13 @@ router.post('/gigstexteditor',validatecontentschema, authentication, sellercontr
 router.post('/imageUpload', authentication,upload.fields([{ name: 'image1' }, { name: 'image2' },{ name: 'image3' }, { name: 'vedio' }]), sellercontroller.addingmediaGigs);
 
 
-router.get('/list',sellercontroller.listdata);
+router.get('/gigslist/:id',sellercontroller.listdata);
+
+
+router.post('/gigsrating',validaterating ,authentication, sellercontroller.addingrating);
+
+
+router.get('/subcategoryData/:id',sellercontroller.subcateogydata);
 
 
 module.exports = router;

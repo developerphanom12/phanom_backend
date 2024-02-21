@@ -407,7 +407,7 @@ function addmediadata(data) {
 }
 
 
-function listgigsdata() {
+function listgigsdata(gigId) {
   return new Promise((resolve, reject) => {
     const query = `
       SELECT DISTINCT
@@ -444,16 +444,36 @@ function listgigsdata() {
           pu.gig_id,
           pu.programing_language,
           pu.create_date as program_create_date,
-          pu.update_date as program_update_date
+          pu.update_date as program_update_date,
+          gg.id as guestion_id,
+          gg.gig_id,
+          gg.question,
+          gg.answer,
+          gg.create_date as question_create_date,
+          gg.update_date as question_update_date,
+          gt.id as texteditor_id,
+          gt.gig_id,
+          gt.content,
+          gt.create_date,
+          gt.update_date,
+          gw.id as web_id,
+          gw.gig_id,
+          gw.website_feature,
+          gw.create_date,
+          gw.update_date
       FROM  gigs_create c
       LEFT JOIN  gigs_plantype u ON c.id = u.gig_id
       LEFT JOIN  seller s ON c.seller_id = s.id
       LEFT JOIN  category ci ON c.category_id = ci.id
       LEFT JOIN  sub_category sub ON c.subcategory_id = sub.id
       LEFT JOIN  gigs_programlang pu ON c.id = pu.gig_id
+      LEFT JOIN  gigs_texteditor gt ON c.id = gt.gig_id
+      LEFT JOIN gigs_question gg ON c.id = gg.gig_id
+      LEFT JOIN  gigs_websitefeature gw ON c.id = gw.gig_id
+       WHERE c.id = ?;
     `;
 
-    db.query(query, (error, results) => {
+    db.query(query,gigId, (error, results) => {
       if (error) {
         console.error("Error executing query:", error);
         reject(error);
@@ -462,7 +482,7 @@ function listgigsdata() {
 
         results.forEach((result) => {
           const gigsId = result.gigs_id;
-
+        
           if (!gigsMap.has(gigsId)) {
             gigsMap.set(gigsId, {
               gigs_id: gigsId,
@@ -486,32 +506,68 @@ function listgigsdata() {
               },
               plantypes: [],
               programing: [],
+              question: [],
+              websiteFeatures: [],
+              EditorData: {
+                texteditor_id: result.texteditor_id,
+                gig_id: result.gig_id,
+                content: result.content,
+                create_date: result.create_date,
+                update_date: result.update_date,
+              }
+            });
+          }
+        
+          if (!gigsMap.get(gigsId).programing.some(program => program.program_id === result.program_id)) {
+            gigsMap.get(gigsId).programing.push({
+              program_id: result.program_id,
+              gig_id: result.gig_id,
+              programing_language: result.programing_language,
+              create_date: result.program_create_date,
+              update_date: result.program_update_date,
+            });
+          }
+        
+          if (!gigsMap.get(gigsId).plantypes.some(plantype => plantype.plan_id === result.plan_id)) {
+            gigsMap.get(gigsId).plantypes.push({
+              plan_id: result.plan_id,
+              gig_id: result.gig_id,
+              title: result.title,
+              description: result.description,
+              delivery_time: result.delivery_time,
+              number_of_pages: result.number_of_pages,
+              revision: result.revision,
+              plugin_extension: result.plugin_extension,
+              plan_type: result.plan_type,
+              content_upload: result.content_upload,
+              create_date: result.create_date,
+              update_date: result.update_date,
+            });
+          }
+          if (!gigsMap.get(gigsId).question.some(questions => questions.guestion_id === result.guestion_id)) {
+            gigsMap.get(gigsId).question.push({
+              guestion_id: result.guestion_id,
+              gig_id: result.gig_id,
+              question: result.question,
+              answer: result.answer,
+              create_date: result.question_create_date,
+              update_date: result.question_update_date,
             });
           }
 
-          gigsMap.get(gigsId).programing.push({
-            program_id: result.program_id,
-            gig_id: result.gig_id,
-            programing_language: result.programing_language,
-            create_date: result.program_create_date,
-            update_date: result.program_update_date,
-          });
-
-          gigsMap.get(gigsId).plantypes.push({
-            plan_id: result.plan_id,
-            gig_id: result.gig_id,
-            title: result.title,
-            description: result.description,
-            delivery_time: result.delivery_time,
-            number_of_pages: result.number_of_pages,
-            revision: result.revision,
-            plugin_extension: result.plugin_extension,
-            plan_type: result.plan_type,
-            content_upload: result.content_upload,
-            create_date: result.create_date,
-            update_date: result.update_date,
-          });
+          if (!gigsMap.get(gigsId).websiteFeatures.some(website => website.web_id === result.web_id)) {
+            gigsMap.get(gigsId).websiteFeatures.push({
+              web_id: result.web_id,
+              gig_id: result.gig_id,
+              website_feature: result.website_feature,
+              create_date: result.create_date,
+              update_date: result.update_date,
+            });
+          }
+        
+        
         });
+        
 
         const categoriesWithSubcategories = Array.from(gigsMap.values());
 
@@ -526,6 +582,155 @@ function listgigsdata() {
   });
 }
 
+
+function insertRating(data,userId) {
+  const { gig_id, rating,} = data;
+  return new Promise((resolve, reject) => {
+  
+    const query = `
+      INSERT INTO gigs_rating
+      (gig_id,seller_id,rating)
+      VALUES (?, ?, ?)
+    `;
+
+    console.log("Executing query:", query);
+    const values = [
+      gig_id,
+      userId,
+      rating,
+    ];
+
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error("Error in insert query:", err);
+        return reject(err);
+      }
+      resolve(result.insertId);
+    });
+  });
+}
+
+
+
+
+function getSubcategoryId(subId) {
+  return new Promise((resolve, reject) => {
+    const query = `
+        SELECT DISTINCT
+            c.id AS subcategory_id,
+            c.category_id,
+            c.name,
+            gd.id as gig_id,
+            gd.subcategory_id,
+            gd.gig_title,
+            ss.id as seller_id,
+            ss.username,
+            ss.image,
+            pp.id as plan_type,
+            pp.gig_id, 
+            pp.price,
+            gi.id as content_id,
+            gi.gig_id,
+            gi.image1,
+            gi.image2,
+            gi.image3,
+            gi.vedio
+            FROM  sub_category c
+        LEFT JOIN gigs_create gd ON c.id = gd.subcategory_id
+        LEFT JOIN seller ss ON gd.seller_id = ss.id
+        LEFT JOIN gigs_plantype pp ON gd.id = pp.gig_id
+        LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
+
+        WHERE c.id = ?;`;
+
+    db.query(query, subId, (error, results) => {
+      if (error) {
+        console.error("Error executing query:", error);
+        reject(error);
+      } 
+
+      else {
+        const gigsMap = new Map();
+
+        results.forEach((result) => {
+          const gigsId = result.subcategory_id;
+        
+          if (!gigsMap.has(gigsId)) {
+            gigsMap.set(gigsId, {
+              category_id: gigsId,
+              category_id: result.category_id,
+              name : result.name,
+              gigsData :{
+                gig_id: result.gig_id,
+                subcategory_id: result.subcategory_id,
+                gig_title : result.gig_title,
+              },
+              seller : {
+                seller_id: result.seller_id,
+                username: result.username,
+                image  : result.image,
+              },
+              gigsimages : {
+                content_id: result.content_id,
+                gig_id: result.gig_id,
+                image1: result.image1,
+                image2  : result.image2,
+                image3  : result.image3,
+                vedio  : result.vedio,
+
+              },
+              plantypes: [],
+             
+            });
+          }
+        
+
+          if (!gigsMap.get(gigsId).plantypes.some(plantype => plantype.plan_type === result.plan_type)) {
+            gigsMap.get(gigsId).plantypes.push({
+              plan_type: result.plan_type,
+              gig_id: result.gig_id,
+              price  : result.price,
+            });
+          }
+        
+        
+        });
+        
+
+        const categoriesWithSubcategories = Array.from(gigsMap.values());
+
+        if (categoriesWithSubcategories.length === 0) {
+          resolve(null);
+        } else {
+          resolve(categoriesWithSubcategories);
+          console.log("Data retrieved successfully");
+        }
+      }
+    });
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
 module.exports = {
   sellergister,
   checkusername,
@@ -542,4 +747,6 @@ module.exports = {
   addCOntentforgigs,
   addmediadata,
   listgigsdata,
+  insertRating,
+  getSubcategoryId
 };
