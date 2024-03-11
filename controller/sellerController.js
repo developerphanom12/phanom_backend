@@ -507,6 +507,85 @@ const addingrating = async (req, res) => {
 };
 
 
+
+const createOffer = async (req, res) => {
+  const userId = req.user.id;
+  const userRole = req.user.role;
+
+
+  if (req.user.role !== "seller" && req.user.role !== "buyer") {
+    return res
+      .status(403)
+      .json({ status: 403, error: "Forbidden for regular users" });
+  }
+
+  const { gigs_id, offer_type, receive_id, offer_expire } = req.body;
+
+  const expireDate = new Date(offer_expire);
+  expireDate.setDate(expireDate.getDate() < new Date().getDate() + 7 ? new Date().getDate() + 7 : expireDate.getDate());
+
+  try {
+    const gigId = await sellerService.checkGigidout(gigs_id);
+    if (!gigId) {
+      return res
+        .status(404)
+        .json({ status: 404, message: "gig id not found" });
+    }
+
+    const userid = await sellerService.CreateOffer(
+      gigs_id,
+      offer_type,
+      userId, 
+      receive_id,
+      expireDate,
+      userRole
+    );
+
+   if(offer_type === "singlepayment"){
+    const { describe_offer, revision, delivery_day, price } = req.body;
+
+    const userid11 = await sellerService.offertype(
+      userid,
+      describe_offer,
+      revision,
+      delivery_day,
+      price
+     
+    );
+    res.status(201).json({
+      message: "Data added successfully",
+      status: 201,
+      data: userid11,
+    });
+   }
+   else if(offer_type === "milestone"){
+
+    const userid1 = await sellerService.CreateOffer(
+      userid,
+      describe_offer1,
+      revision1,
+      delivery_day1,
+      price1
+     
+    );
+    res.status(201).json({
+      message: "Data added successfully",
+      status: 201,
+      data: userid1,
+    });
+   }
+
+  } catch (error) {
+    console.error("Error in add gigs:", error);
+    res.status(500).json({
+      status: 500,
+      error: "Failed to create gigs data",
+      message: error.message,
+      stack: error.stack,
+    });
+  }
+};
+
 module.exports = {
   createseller,
   addgigadata,
@@ -518,5 +597,6 @@ module.exports = {
   addingmediaGigs,
   listdata,
   subcateogydata,
-  addingrating
+  addingrating,
+  createOffer
 };

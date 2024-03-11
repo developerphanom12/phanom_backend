@@ -32,6 +32,8 @@ router.post('/gigsrating',validaterating ,authentication, sellercontroller.addin
 
 router.get('/subcategoryData/:id',sellercontroller.subcateogydata);
 
+router.post('/offercreate',authentication, sellercontroller.createOffer)
+
 
 module.exports = router;
 

@@ -711,26 +711,78 @@ function getSubcategoryId(subId) {
 }
 
 
+function checkGigidout(gigs_id) {
+  return new Promise((resolve, reject) => {
+    const query = "SELECT * FROM gigs_create WHERE id = ?";
+    db.query(query, [gigs_id], (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results.length > 0 ? results[0] : null);
+      }
+    });
+  });
+}
+
+
+
+
+function CreateOffer(gigs_id, offer_type, creator_id, receive_id, offer_expire,role) {
+  return new Promise((resolve, reject) => {
+    if (!gigs_id || !offer_type || !creator_id || !receive_id || !offer_expire || !role ){
+      return reject("Missing required parameters");
+    }
+
+    const query = `
+      INSERT INTO offer_create 
+      (gigs_id, offer_type, creator_id, receive_id, offer_expire,role)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    console.log("Executing query:", query);
+
+    const values = [gigs_id, offer_type, creator_id, receive_id, offer_expire,role];
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error("Error in insert query:", err);
+        return reject(err);
+      }
+
+      resolve(result.insertId);
+    });
+  });
+}
 
 
 
 
 
+function offertype(offer_id, describe_offer, revision, delivery_day, price) {
+  return new Promise((resolve, reject) => {
+    if (!offer_id || !describe_offer || !revision || !delivery_day || !price ){
+      return reject("Missing required parameters");
+    }
 
+    const query = `
+      INSERT INTO  offer_singlepayment 
+      (offer_id, describe_offer, revision, delivery_day, price)
+      VALUES (?, ?, ?, ?, ?)
+    `;
 
+    console.log("Executing query:", query);
 
+    const values = [offer_id, describe_offer, revision, delivery_day, price];
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error("Error in insert query:", err);
+        return reject(err);
+      }
 
+      resolve(result.insertId);
+    });
+  });
+}
 
-
-
-
-
-
-
-
-
-
-     
 module.exports = {
   sellergister,
   checkusername,
@@ -748,5 +800,8 @@ module.exports = {
   addmediadata,
   listgigsdata,
   insertRating,
-  getSubcategoryId
+  getSubcategoryId,
+  checkGigidout,
+  CreateOffer,
+  offertype
 };
