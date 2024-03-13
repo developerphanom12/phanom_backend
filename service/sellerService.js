@@ -783,6 +783,48 @@ function offertype(offer_id, describe_offer, revision, delivery_day, price) {
   });
 }
 
+const aprrovedOffer = (status, id) => {
+  const updateQuery = "UPDATE offer_create SET status = ? WHERE id = ?";
+  
+  const values = [status, id];
+  
+  return new Promise((resolve, reject) => {
+    try {
+      db.query(updateQuery, values, (err, result) => {
+        if (err) {
+          console.error("Error in update query:", err);
+          reject(err);
+          return;
+        }
+
+        if (result.affectedRows === 0) {
+          reject({ status: 404, error: "Offer not found" });
+          return;
+        }
+
+        resolve({ id, message: "Offer status updated successfully" });
+      });
+    } catch (error) {
+      console.error("Caught error:", error);
+      reject({ status: error.status || 500, error });
+    }
+  });
+};
+
+
+async function getOfferById(offerId) {
+  return new Promise((resolve, reject) => {
+    const query = "SELECT * FROM offer_create WHERE id = ?";
+    db.query(query, [offerId], (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results.length > 0 ? results[0] : null);
+      }
+    });
+  });
+}
+
 module.exports = {
   sellergister,
   checkusername,
@@ -803,5 +845,7 @@ module.exports = {
   getSubcategoryId,
   checkGigidout,
   CreateOffer,
-  offertype
+  offertype,
+  aprrovedOffer,
+  getOfferById
 };

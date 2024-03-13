@@ -5,7 +5,6 @@ const { validatevalue} = require('../Validation/Validation');
 
 router.post('/adminreg',validatevalue , admincontroller.registerAdmin);
 
-
 router.post('/adminlog',validatevalue , admincontroller.loginAdmin);
 
 

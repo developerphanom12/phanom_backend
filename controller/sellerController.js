@@ -45,11 +45,12 @@ const createseller = async (req, res) => {
     res.status(500).json({
       status: 500,
       error: "Failed to create seller",
-      message: error.message, 
+      message: error.message,
       stack: error.stack,
     });
   }
 };
+
 const addgigadata = async (req, res) => {
   const userId = req.user.id;
 
@@ -75,26 +76,23 @@ const addgigadata = async (req, res) => {
         .json({ status: 404, message: "Sub Category not found" });
     }
 
+    const userid = await sellerService.insertGigsData(
+      gig_title,
+      category_id,
+      subcategory_id,
+      service_type,
+      tags,
+      userId
+    );
 
-    
-    const  userid = await sellerService.insertGigsData(
-        gig_title,
-        category_id,
-        subcategory_id,
-        service_type,
-        tags,
-        userId
-      );
+    if (userid && userid > 0) {
+      const { programing_language, website_feature } = req.body;
 
-      if (userid && userid > 0) {
-        const { programing_language, website_feature } = req.body;
-
-        await sellerService.insertprograminglan(userid, programing_language);
-        await sellerService.insertweblanguage(userid, website_feature);
-      } else {
-        throw new Error("Failed to insert gig data");
-      }
-    
+      await sellerService.insertprograminglan(userid, programing_language);
+      await sellerService.insertweblanguage(userid, website_feature);
+    } else {
+      throw new Error("Failed to insert gig data");
+    }
 
     res.status(201).json({
       message: "Data added successfully",
@@ -232,7 +230,7 @@ const addingGigsPrice = async (req, res) => {
     res.status(500).json({
       status: 500,
       error: "Failed to add Price data ",
-      message: error.message, 
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -313,7 +311,7 @@ const addingContent = async (req, res) => {
     res.status(500).json({
       status: 500,
       error: "Failed to add Content",
-      message: error.message, 
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -373,7 +371,7 @@ const addingmediaGigs = async (req, res) => {
     res.status(500).json({
       status: 500,
       error: "Failed to add vedio images",
-      message: error.message, 
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -421,13 +419,11 @@ function isValidvedioPath(path) {
   return true;
 }
 
-
-
 const listdata = async (req, res) => {
   const gigId = req.params.id;
 
-  if(!gigId){
-    res.status(404).json({message:'please provide Id',status:404}) 
+  if (!gigId) {
+    res.status(404).json({ message: "please provide Id", status: 404 });
   }
   try {
     const data = await sellerService.listgigsdata(gigId);
@@ -436,7 +432,7 @@ const listdata = async (req, res) => {
       return res.status(404).json({ status: 404, error: "Data not found" });
     }
     res.status(201).json({
-      status: 201, 
+      status: 201,
       message: data,
     });
   } catch (error) {
@@ -444,26 +440,23 @@ const listdata = async (req, res) => {
     res.status(500).json({
       status: 500,
       error: "failed to get data ",
-      message: error.message, 
+      message: error.message,
       stack: error.stack,
     });
   }
 };
 
-
-
-
-const   subcateogydata = async (req, res) => {
+const subcateogydata = async (req, res) => {
   const subId = req.params.id;
 
   try {
     const data = await sellerService.getSubcategoryId(subId);
-   console.log("dtatata",data)
+    console.log("dtatata", data);
     if (!data || data.length === 0) {
       return res.status(404).json({ status: 404, error: "Data not found" });
     }
     res.status(201).json({
-      status: 201, 
+      status: 201,
       message: data,
     });
   } catch (error) {
@@ -476,7 +469,6 @@ const   subcateogydata = async (req, res) => {
   }
 };
 
-
 const addingrating = async (req, res) => {
   const userId = req.user.id;
 
@@ -486,20 +478,16 @@ const addingrating = async (req, res) => {
       .json({ status: 403, error: "Forbidden for regular users" });
   }
 
-  const { gig_id,rating } = req.body;
+  const { gig_id, rating } = req.body;
   try {
-
-    const ratings = {gig_id,rating}
+    const ratings = { gig_id, rating };
 
     const categoryids = await sellerService.checkGigid(gig_id);
     if (!categoryids) {
-      return res
-        .status(404)
-        .json({ status: 404, message: "Gig id not found" });
+      return res.status(404).json({ status: 404, message: "Gig id not found" });
     }
 
-    
-    const userid = await sellerService.insertRating(ratings ,userId);
+    const userid = await sellerService.insertRating(ratings, userId);
 
     res.status(201).json({
       message: "Data added successfully",
@@ -517,12 +505,9 @@ const addingrating = async (req, res) => {
   }
 };
 
-
-
 const createOffer = async (req, res) => {
   const userId = req.user.id;
   const userRole = req.user.role;
-
 
   if (req.user.role !== "seller" && req.user.role !== "buyer") {
     return res
@@ -533,59 +518,56 @@ const createOffer = async (req, res) => {
   const { gigs_id, offer_type, receive_id, offer_expire } = req.body;
 
   const expireDate = new Date(offer_expire);
-  expireDate.setDate(expireDate.getDate() < new Date().getDate() + 7 ? new Date().getDate() + 7 : expireDate.getDate());
+  expireDate.setDate(
+    expireDate.getDate() < new Date().getDate() + 7
+      ? new Date().getDate() + 7
+      : expireDate.getDate()
+  );
 
   try {
     const gigId = await sellerService.checkGigidout(gigs_id);
     if (!gigId) {
-      return res
-        .status(404)
-        .json({ status: 404, message: "gig id not found" });
+      return res.status(404).json({ status: 404, message: "gig id not found" });
     }
 
     const userid = await sellerService.CreateOffer(
       gigs_id,
       offer_type,
-      userId, 
+      userId,
       receive_id,
       expireDate,
       userRole
     );
 
-   if(offer_type === "singlepayment"){
-    const { describe_offer, revision, delivery_day, price } = req.body;
+    if (offer_type === "singlepayment") {
+      const { describe_offer, revision, delivery_day, price } = req.body;
 
-    const userid11 = await sellerService.offertype(
-      userid,
-      describe_offer,
-      revision,
-      delivery_day,
-      price
-     
-    );
-    res.status(201).json({
-      message: "Data added successfully",
-      status: 201,
-      data: userid11,
-    });
-   }
-   else if(offer_type === "milestone"){
-
-    const userid1 = await sellerService.CreateOffer(
-      userid,
-      describe_offer1,
-      revision1,
-      delivery_day1,
-      price1
-     
-    );
-    res.status(201).json({
-      message: "Data added successfully",
-      status: 201,
-      data: userid1,
-    });
-   }
-
+      const userid11 = await sellerService.offertype(
+        userid,
+        describe_offer,
+        revision,
+        delivery_day,
+        price
+      );
+      res.status(201).json({
+        message: "Data added successfully",
+        status: 201,
+        data: userid11,
+      });
+    } else if (offer_type === "milestone") {
+      const userid1 = await sellerService.CreateOffer(
+        userid,
+        describe_offer1,
+        revision1,
+        delivery_day1,
+        price1
+      );
+      res.status(201).json({
+        message: "Data added successfully",
+        status: 201,
+        data: userid1,
+      });
+    }
   } catch (error) {
     console.error("Error in add gigs:", error);
     res.status(500).json({
@@ -596,6 +578,47 @@ const createOffer = async (req, res) => {
     });
   }
 };
+
+const userApproved = async (req, res) => {
+  const userId = req.user.id;
+  const userRole = req.user.role;
+
+  try {
+    const { id, status } = req.body;
+    
+    if (userRole !== "seller" && userRole !== "seller") {
+      throw {
+        status: 403,
+        error: "Forbidden. Only seller or seller can update order status.",
+      };
+    }
+
+    const offer = await sellerService.getOfferById(id);
+    if (!offer) {
+      return res.status(404).json({ status: 404, message: "Offer not found" });
+    }
+    if (offer.creator_id !== userId || offer.role !== userRole) {
+      return res.status(403).json({ status: 403, message: "userid and role not match with offer id" });
+
+    }
+
+    await sellerService.aprrovedOffer(status, id);
+    
+    res.status(200).json({
+      status: 200,
+      message: "Offer updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating offer status:", error);
+    res.status(error.status || 500).json({
+      status: error.status || 500,
+      error: "Failed to update offer status",
+      message: error.message,
+      stack: error.stack,
+    });
+  }
+};
+
 
 module.exports = {
   createseller,
@@ -609,5 +632,6 @@ module.exports = {
   listdata,
   subcateogydata,
   addingrating,
-  createOffer
+  createOffer,
+  userApproved,
 };

@@ -185,6 +185,23 @@ const validaterating = (req, res, next) => {
   next();
 };
 
+
+
+const offerupdate = Joi.object({
+  id : Joi.number().required(),
+  status: Joi.string().valid("pending", "approved", "cancel").required(),
+});
+
+const validateoffer = (req, res, next) => {
+  const { error } = offerupdate.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  next();
+};
+
 module.exports = {
   validatevalue,
   validatecategory,
@@ -197,4 +214,5 @@ module.exports = {
   validatequestionSchema,
   validatecontentschema,
   validaterating,
+  validateoffer
 };

@@ -1,7 +1,7 @@
 const  express = require('express')
 const router = express.Router();
 const sellercontroller = require('../controller/sellerController');
-const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema, validaterating} = require('../Validation/Validation');
+const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema, validaterating, validateoffer} = require('../Validation/Validation');
 const authentication = require('../Middleware/Authentication');
 const { upload } = require('../Middleware/Multer');
 
@@ -30,7 +30,7 @@ router.get('/subcategoryData/:id',sellercontroller.subcateogydata);
 
 router.post('/offercreate',authentication, sellercontroller.createOffer)
 
-router.post('/offercreate',authentication, sellercontroller.createOffer)
+router.post('/offerupdate',validateoffer,authentication, sellercontroller.userApproved)
 
 
 
