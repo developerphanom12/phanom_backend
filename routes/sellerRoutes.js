@@ -6,7 +6,6 @@ const authentication = require('../Middleware/Authentication');
 const { upload } = require('../Middleware/Multer');
 
 
-
 router.post('/sellerRegister',validateSeller , sellercontroller.createseller);
 
 router.post('/loginseller',validatesellerlogin ,sellercontroller.loginseller);
@@ -23,16 +22,17 @@ router.post('/gigstexteditor',validatecontentschema, authentication, sellercontr
 
 router.post('/imageUpload', authentication,upload.fields([{ name: 'image1' }, { name: 'image2' },{ name: 'image3' }, { name: 'vedio' }]), sellercontroller.addingmediaGigs);
 
-
 router.get('/gigslist/:id',sellercontroller.listdata);
 
-
 router.post('/gigsrating',validaterating ,authentication, sellercontroller.addingrating);
-
 
 router.get('/subcategoryData/:id',sellercontroller.subcateogydata);
 
 router.post('/offercreate',authentication, sellercontroller.createOffer)
+
+router.post('/offercreate',authentication, sellercontroller.createOffer)
+
+
 
 
 module.exports = router;

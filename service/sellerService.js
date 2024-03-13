@@ -161,14 +161,14 @@ function loginseller(username, password, callback) {
     });
   });
 }
-async function insertprograminglan(gig_id, programing_languages) {
+async function insertprograminglan(userid, programing_languages) {
   const query = `
     INSERT INTO  gigs_programlang 
     (gig_id, programing_language)
     VALUES (?, ?)
   `;
 
-  const values = programing_languages.map((language) => [gig_id, language]);
+  const values = programing_languages.map((language) => [userid, language]);
 
   try {
     const results = await Promise.all(
@@ -205,14 +205,14 @@ function checkGigid(gig_id) {
   });
 }
 
-async function insertweblanguage(gig_id, website_feature) {
+async function insertweblanguage(userid, website_feature) {
   const query = `
     INSERT INTO  gigs_websitefeature 
     (gig_id, website_feature)
     VALUES (?, ?)
   `;
 
-  const values = website_feature.map((language) => [gig_id, language]);
+  const values = website_feature.map((language) => [userid, language]);
 
   try {
     const results = await Promise.all(

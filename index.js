@@ -18,8 +18,8 @@ module.exports.options = {
   summaryTrendStats: ['avg', 'p(95)', 'max', 'med'],
   // Configure thresholds
   thresholds: {
-    'http_req_failed': ['rate<0.1'], // threshold to fail test if request failure rate exceeds 10%
-    'http_req_duration': ['p(95)<500'], // threshold for 95th percentile response time
+    'http_req_failed': ['rate<0.1'], 
+    'http_req_duration': ['p(95)<500'],
   },
 };
 

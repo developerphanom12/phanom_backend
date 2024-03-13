@@ -50,7 +50,6 @@ const createseller = async (req, res) => {
     });
   }
 };
-
 const addgigadata = async (req, res) => {
   const userId = req.user.id;
 
@@ -76,14 +75,26 @@ const addgigadata = async (req, res) => {
         .json({ status: 404, message: "Sub Category not found" });
     }
 
-    const userid = await sellerService.insertGigsData(
-      gig_title,
-      category_id,
-      subcategory_id,
-      service_type,
-      tags,
-      userId
-    );
+
+    
+    const  userid = await sellerService.insertGigsData(
+        gig_title,
+        category_id,
+        subcategory_id,
+        service_type,
+        tags,
+        userId
+      );
+
+      if (userid && userid > 0) {
+        const { programing_language, website_feature } = req.body;
+
+        await sellerService.insertprograminglan(userid, programing_language);
+        await sellerService.insertweblanguage(userid, website_feature);
+      } else {
+        throw new Error("Failed to insert gig data");
+      }
+    
 
     res.status(201).json({
       message: "Data added successfully",
@@ -442,7 +453,7 @@ const listdata = async (req, res) => {
 
 
 
-const subcateogydata = async (req, res) => {
+const   subcateogydata = async (req, res) => {
   const subId = req.params.id;
 
   try {
@@ -488,7 +499,7 @@ const addingrating = async (req, res) => {
     }
 
     
-    const userid = await sellerService.insertRating( ratings ,userId);
+    const userid = await sellerService.insertRating(ratings ,userId);
 
     res.status(201).json({
       message: "Data added successfully",
