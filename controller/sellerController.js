@@ -97,7 +97,9 @@ const addgigadata = async (req, res) => {
     res.status(201).json({
       message: "Data added successfully",
       status: 201,
-      data: userid,
+      data: {
+        id: userid
+      },
     });
   } catch (error) {
     console.error("Error in add gigs:", error);
