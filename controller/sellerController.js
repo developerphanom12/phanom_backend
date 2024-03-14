@@ -222,7 +222,7 @@ const addingGigsPrice = async (req, res) => {
 
     const userid = await sellerService.insertPriceData(data);
 
-    res.status(201).json({
+    res.status(201).json({  
       message: "Data added successfully",
       status: 201,
       data: userid,
@@ -466,6 +466,7 @@ const subcateogydata = async (req, res) => {
     res.status(500).json({
       status: 500,
       error: "Failed to add subcategory",
+      message: error.message,
       stack: error.stack,
     });
   }
@@ -584,11 +585,11 @@ const createOffer = async (req, res) => {
 const userApproved = async (req, res) => {
   const userId = req.user.id;
   const userRole = req.user.role;
-
+ 
   try {
     const { id, status } = req.body;
     
-    if (userRole !== "seller" && userRole !== "seller") {
+    if (userRole !== "seller" && userRole !== "buyer") {
       throw {
         status: 403,
         error: "Forbidden. Only seller or seller can update order status.",
@@ -622,6 +623,74 @@ const userApproved = async (req, res) => {
 };
 
 
+const checkordersales = async (req, res) => {
+  const userSelection = req.query.selection;
+  const userId = req.user.id;
+  const userRole = req.user.role;
+  const selectedMonth = req.query.month;
+
+  try {
+    if (userSelection === "last30days") {
+      const last30DaysData = await sellerService.odersales(30, userId, userRole);
+      const total30days = await sellerService.totalgetorders(30, userId, userRole);
+
+      return res.status(200).json({
+        status: 200,
+        message: "Data fetched successfully",
+        data: {
+          last30DaysData,
+          total30days,
+        },
+      });
+    } else if (userSelection === "last90days") {
+      const last90DaysData = await sellerService.odersales(90, userId, userRole);
+      const total90days = await sellerService.totalgetorders(30, userId, userRole);
+
+      return res.status(200).json({
+        status: 200,
+        message: "Data fetched successfully",
+        data: {
+          last90DaysData,
+          total90days,
+        },
+      });
+    } else if (selectedMonth === "currentMonth") {
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1; 
+      const currentMonthData = await sellerService.yearlyCheck(currentMonth, userId, userRole);
+
+      if (currentMonthData.length === 0) {
+        return res.status(404).json({
+          status: 404,
+          error: `No sales data found for the current month`,
+        });
+      } else {
+        return res.status(200).json({
+          status: 200,
+          message: "Data fetched successfully",
+          data: {
+            data: currentMonthData,
+          },
+        });
+      }
+    } else {
+      return res.status(400).json({
+        status: 400,
+        error: "Invalid user selection",
+      });
+    }
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    return res.status(500).json({
+      status: 500,
+      error: "An unexpected error occurred. Please try again later.",
+      errorMessage: error.message,
+    });
+  }
+};
+
+
+
 module.exports = {
   createseller,
   addgigadata,
@@ -636,4 +705,5 @@ module.exports = {
   addingrating,
   createOffer,
   userApproved,
+  checkordersales
 };

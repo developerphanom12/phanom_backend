@@ -202,6 +202,67 @@ const validateoffer = (req, res, next) => {
   next();
 };
 
+
+const singlePaymentSchema = Joi.object({
+  describe_offer: Joi.string().required(),
+  revision: Joi.number().integer().min(0).required(),
+  delivery_day: Joi.number().integer().min(1).required(),
+  price: Joi.number().min(0).required(),
+});
+
+const milestoneSchema = Joi.object({
+  describe_offer1: Joi.string().required(),
+  revision1: Joi.number().integer().min(0).required(),
+  delivery_day1: Joi.number().integer().min(1).required(),
+  price1: Joi.number().min(0).required(),
+});
+
+const createOfferSchema = Joi.object({
+  gigs_id: Joi.string().required(),
+  offer_type: Joi.string().valid('singlepayment', 'milestone').required(),
+  receive_id: Joi.string().required(),
+  offer_expire: Joi.date().required(),
+  describe_offer: Joi.when('offer_type', {
+    is: 'singlepayment',
+    then: Joi.string().required(),
+    otherwise: Joi.forbidden()
+  }),
+  revision: Joi.when('offer_type', {
+    is: 'singlepayment',
+    then: Joi.number().required(),
+    otherwise: Joi.forbidden()
+  }),
+  delivery_day: Joi.when('offer_type', {
+    is: 'singlepayment',
+    then: Joi.number().required(),
+    otherwise: Joi.forbidden()
+  }),
+  price: Joi.when('offer_type', {
+    is: 'singlepayment',
+    then: Joi.number().min(0).required(),
+    otherwise: Joi.forbidden()
+  }),
+}).options({ abortEarly: false });
+
+const createOffer = async (req, res) => {
+  const { error } = createOfferSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ status: 400, error: error.details.map(detail => detail.message) });
+  }
+
+  if (req.body.offer_type === 'singlepayment') {
+    const { error: singlePaymentError } = singlePaymentSchema.validate(req.body);
+    if (singlePaymentError) {
+      return res.status(400).json({ status: 400, error: singlePaymentError.details.map(detail => detail.message) });
+    }
+  } else if (req.body.offer_type === 'milestone') {
+    const { error: milestoneError } = milestoneSchema.validate(req.body);
+    if (milestoneError) {
+      return res.status(400).json({ status: 400, error: milestoneError.details.map(detail => detail.message) });
+    }
+  }
+}
+
 module.exports = {
   validatevalue,
   validatecategory,
@@ -214,5 +275,6 @@ module.exports = {
   validatequestionSchema,
   validatecontentschema,
   validaterating,
-  validateoffer
+  validateoffer,
+  createOffer
 };

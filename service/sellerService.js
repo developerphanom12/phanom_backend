@@ -825,6 +825,116 @@ async function getOfferById(offerId) {
   });
 }
 
+
+
+async function odersales(n, userId, role) {
+  return new Promise(async (resolve, reject) => {
+    const query = `
+      SELECT
+          DAY(update_date) AS day,
+          WEEK(update_date) AS week,
+          MONTH(update_date) AS month,
+          DATE(update_date) AS date,
+          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS total_pending,
+          SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS total_sales
+         
+      FROM
+          offer_create
+      WHERE
+          status IN ('pending', 'approved') AND
+          creator_id = ? AND
+          role = ? AND
+          update_date >= CURDATE() - INTERVAL ? DAY
+      GROUP BY
+          day, week, month, date
+      ORDER BY
+          month, week, day, date;
+    `;
+
+    const queryParams = [userId, role, n];
+
+    db.query(query, queryParams, (err, result) => {
+      if (err) {
+        console.error("Error in query:", err);
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+
+
+async function totalgetorders(n, userId, role) {
+  return new Promise(async (resolve, reject) => {
+    const query = `
+      SELECT
+          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS total_pending,
+          SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS total_sales
+      FROM
+          offer_create
+      WHERE
+          status IN ('pending', 'approved') AND
+          creator_id = ? AND
+          role = ? AND
+          update_date >= CURDATE() - INTERVAL ? DAY;
+              `;
+
+    const queryParams = [userId, role, n];
+
+    db.query(query, queryParams, (err, result) => {
+      if (err) {
+        console.error("Error in query:", err);
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+async function yearlyCheck(month = null, userId, userRole) {
+  return new Promise((resolve, reject) => {
+    let query = `
+      SELECT
+          DAY(update_date) AS day,
+          WEEK(update_date) AS week,
+          MONTH(update_date) AS month,
+          DATE(update_date) AS date,
+          COUNT(*) AS total_sales
+      FROM
+          offer_create
+      WHERE
+          status = 'approved' AND 
+          creator_id = ? AND
+          role = ?
+    `;
+
+    if (month) {
+      query += ` AND MONTH(update_date) = ? `;
+    }
+
+    query += `
+      GROUP BY
+          day, week, month, date
+      ORDER BY
+          month, week, day, date;
+    `;
+
+    const queryParams = month ? [userId, userRole, month] : [userId, userRole];
+
+    db.query(query, queryParams, (err, result) => {
+      if (err) {
+        console.error("Error in query:", err);
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
 module.exports = {
   sellergister,
   checkusername,
@@ -847,5 +957,8 @@ module.exports = {
   CreateOffer,
   offertype,
   aprrovedOffer,
-  getOfferById
+  getOfferById,
+  odersales,
+  totalgetorders,
+  yearlyCheck
 };
