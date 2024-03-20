@@ -156,7 +156,7 @@ const validatequestionSchema = (req, res, next) => {
 };
 
 const gigcontentschema = Joi.object({
-  gig_id: Joi.string().required(),
+  gig_id: Joi.number().required(),
   content: Joi.string().required(),
 });
 

@@ -75,11 +75,11 @@ const addgigadata = async (req, res) => {
         .status(404)
         .json({ status: 404, message: "Sub Category not found" });
     }
-
+console.log("sub",subcategoryId)
     const userid = await sellerService.insertGigsData(
       gig_title,
       category_id,
-      subcategory_id,
+      subcategory_id,  
       service_type,
       tags,
       userId
@@ -394,7 +394,7 @@ function isValidImagePath(path) {
   const lowercasePath = trimmedPath.toLowerCase();
   if (!validExtensions.some((ext) => lowercasePath.endsWith(ext))) {
     return false;
-  }
+  }     
 
   console.log("ddd", lowercasePath);
   return true;
@@ -449,10 +449,10 @@ const listdata = async (req, res) => {
 };
 
 const subcateogydata = async (req, res) => {
-  const subId = req.params.id;
+  const cd = req.params.id;
 
   try {
-    const data = await sellerService.getSubcategoryId(subId);
+    const data = await sellerService.getSubcategoryId(cd);
     console.log("dtatata", data);
     if (!data || data.length === 0) {
       return res.status(404).json({ status: 404, error: "Data not found" });

@@ -613,14 +613,111 @@ function insertRating(data,userId) {
 
 
 
-function getSubcategoryId(subId) {
+// function getSubcategoryId(subId) {
+//   return new Promise((resolve, reject) => {
+//     const query = `
+//         SELECT DISTINCT
+//             c.id AS subcategory_id,
+//             c.category_id,
+//             c.name,
+//             gd.id as gig_id,
+//             gd.subcategory_id,
+//             gd.gig_title,
+//             ss.id as seller_id,
+//             ss.username,
+//             ss.image,
+//             pp.id as plan_type,
+//             pp.gig_id, 
+//             pp.price,
+//             gi.id as content_id,
+//             gi.gig_id,
+//             gi.image1,
+//             gi.image2,
+//             gi.image3,
+//             gi.vedio
+//             FROM  sub_category c
+//         LEFT JOIN gigs_create gd ON c.id = gd.subcategory_id
+//         LEFT JOIN seller ss ON gd.seller_id = ss.id
+//         LEFT JOIN gigs_plantype pp ON gd.id = pp.gig_id
+//         LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
+
+//         WHERE c.id = ?;`;
+
+//     db.query(query, subId, (error, results) => {
+//       if (error) {
+//         console.error("Error executing query:", error);
+//         reject(error);
+//       } 
+
+//       else {
+//         const gigsMap = new Map();
+
+//         results.forEach((result) => {
+//           const gigsId = result.subcategory_id;
+        
+//           if (!gigsMap.has(gigsId)) {
+//             gigsMap.set(gigsId, {
+//               category_id: gigsId,
+//               category_id: result.category_id,
+//               name : result.name,
+//               gigsData :{
+//                 gig_id: result.gig_id,
+//                 subcategory_id: result.subcategory_id,
+//                 gig_title : result.gig_title,
+//               },
+//               seller : {
+//                 seller_id: result.seller_id,
+//                 username: result.username,
+//                 image  : result.image,
+//               },
+//               gigsimages : {
+//                 content_id: result.content_id,
+//                 gig_id: result.gig_id,
+//                 image1: result.image1,
+//                 image2  : result.image2,
+//                 image3  : result.image3,
+//                 vedio  : result.vedio,
+
+//               },
+//               plantypes: [],
+             
+//             });
+//           }
+        
+
+//           if (!gigsMap.get(gigsId).plantypes.some(plantype => plantype.plan_type === result.plan_type)) {
+//             gigsMap.get(gigsId).plantypes.push({
+//               plan_type: result.plan_type,
+//               gig_id: result.gig_id,
+//               price  : result.price,
+//             });
+//           }
+        
+        
+//         });
+        
+
+//         const categoriesWithSubcategories = Array.from(gigsMap.values());
+
+//         if (categoriesWithSubcategories.length === 0) {
+//           resolve(null);
+//         } else {
+//           resolve(categoriesWithSubcategories);
+//           console.log("Data retrieved successfully");
+//         }
+//       }
+//     });
+//   });
+// }
+
+function getSubcategoryId(cd) {
   return new Promise((resolve, reject) => {
     const query = `
         SELECT DISTINCT
-            c.id AS subcategory_id,
+            c.id AS cd,
             c.category_id,
             c.name,
-            gd.id as gig_id,
+            gd.id as gig_ids,
             gd.subcategory_id,
             gd.gig_title,
             ss.id as seller_id,
@@ -641,70 +738,42 @@ function getSubcategoryId(subId) {
         LEFT JOIN gigs_plantype pp ON gd.id = pp.gig_id
         LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
 
-        WHERE c.id = ?;`;
+        WHERE c.id = ? AND pp.plan_type = 'basic';`;
 
-    db.query(query, subId, (error, results) => {
+
+    db.query(query, cd, (error, results) => {
       if (error) {
         console.error("Error executing query:", error);
         reject(error);
-      } 
+      } else {
+        const data = results.map((row) => ({
+          cd: row.cd,
+          category_id: results.category_id,
+          name : row.name,
+          gigsData :{
+            gig_ids: row.gig_ids,
+            subcategory_id: row.subcategory_id,
+            gig_title : row.gig_title,
+          },
+          seller : {
+            seller_id: row.seller_id,
+            username: row.username,
+            image  : row.image,
+          },
+          gigsimages : {
+            content_id: row.content_id,
+            gig_id: row.gig_id,
+            image1: row.image1,
+            image2  : row.image2,
+            image3  : row.image3,
+            vedio  : row.vedio,
 
-      else {
-        const gigsMap = new Map();
+          },
+        }));
 
-        results.forEach((result) => {
-          const gigsId = result.subcategory_id;
-        
-          if (!gigsMap.has(gigsId)) {
-            gigsMap.set(gigsId, {
-              category_id: gigsId,
-              category_id: result.category_id,
-              name : result.name,
-              gigsData :{
-                gig_id: result.gig_id,
-                subcategory_id: result.subcategory_id,
-                gig_title : result.gig_title,
-              },
-              seller : {
-                seller_id: result.seller_id,
-                username: result.username,
-                image  : result.image,
-              },
-              gigsimages : {
-                content_id: result.content_id,
-                gig_id: result.gig_id,
-                image1: result.image1,
-                image2  : result.image2,
-                image3  : result.image3,
-                vedio  : result.vedio,
+        resolve(data);
 
-              },
-              plantypes: [],
-             
-            });
-          }
-        
-
-          if (!gigsMap.get(gigsId).plantypes.some(plantype => plantype.plan_type === result.plan_type)) {
-            gigsMap.get(gigsId).plantypes.push({
-              plan_type: result.plan_type,
-              gig_id: result.gig_id,
-              price  : result.price,
-            });
-          }
-        
-        
-        });
-        
-
-        const categoriesWithSubcategories = Array.from(gigsMap.values());
-
-        if (categoriesWithSubcategories.length === 0) {
-          resolve(null);
-        } else {
-          resolve(categoriesWithSubcategories);
-          console.log("Data retrieved successfully");
-        }
+        console.log("All data retrieved successfully");
       }
     });
   });
@@ -752,10 +821,6 @@ function CreateOffer(gigs_id, offer_type, creator_id, receive_id, offer_expire,r
     });
   });
 }
-
-
-
-
 
 function offertype(offer_id, describe_offer, revision, delivery_day, price) {
   return new Promise((resolve, reject) => {
