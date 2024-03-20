@@ -740,7 +740,7 @@ function getSubcategoryId(cd) {
 
         WHERE c.id = ? AND pp.plan_type = 'basic';`;
 
-    
+        
     db.query(query, cd, (error, results) => {
       if (error) {
         console.error("Error executing query:", error);
