@@ -406,7 +406,6 @@ function addmediadata(data) {
   });
 }
 
-
 function listgigsdata(gigId) {
   return new Promise((resolve, reject) => {
     const query = `
@@ -460,7 +459,18 @@ function listgigsdata(gigId) {
           gw.gig_id,
           gw.website_feature,
           gw.create_date,
-          gw.update_date
+          gw.update_date,
+          gp.id AS content_id,
+          gp.gig_id,
+          gp.image1,
+          gp.image2,
+          gp.image3,
+          gp.vedio,
+          grr.id AS rating_id,
+          grr.gig_id,
+          grr.seller_id,
+          grr.rating,
+          grr.comment
       FROM  gigs_create c
       LEFT JOIN  gigs_plantype u ON c.id = u.gig_id
       LEFT JOIN  seller s ON c.seller_id = s.id
@@ -470,10 +480,12 @@ function listgigsdata(gigId) {
       LEFT JOIN  gigs_texteditor gt ON c.id = gt.gig_id
       LEFT JOIN gigs_question gg ON c.id = gg.gig_id
       LEFT JOIN  gigs_websitefeature gw ON c.id = gw.gig_id
+      LEFT JOIN  gigs_imagedata gp ON c.id = gp.gig_id
+      LEFT JOIN  gigs_rating grr ON c.id = grr.gig_id
        WHERE c.id = ?;
     `;
 
-    db.query(query,gigId, (error, results) => {
+    db.query(query, gigId, (error, results) => {
       if (error) {
         console.error("Error executing query:", error);
         reject(error);
@@ -482,7 +494,7 @@ function listgigsdata(gigId) {
 
         results.forEach((result) => {
           const gigsId = result.gigs_id;
-        
+
           if (!gigsMap.has(gigsId)) {
             gigsMap.set(gigsId, {
               gigs_id: gigsId,
@@ -504,6 +516,7 @@ function listgigsdata(gigId) {
                 category_id: result.category_id,
                 name: result.name,
               },
+              rating: [],
               plantypes: [],
               programing: [],
               question: [],
@@ -514,11 +527,25 @@ function listgigsdata(gigId) {
                 content: result.content,
                 create_date: result.create_date,
                 update_date: result.update_date,
-              }
+              },
+              images: {
+                content_id: result.content_id,
+                gig_id: result.gig_id,
+                image1: result.image1,
+                image2: result.image1,
+                image3: result.image1,
+                vedio: result.vedio,
+              },
             });
           }
-        
-          if (!gigsMap.get(gigsId).programing.some(program => program.program_id === result.program_id)) {
+
+          if (
+            !gigsMap
+              .get(gigsId)
+              .programing.some(
+                (program) => program.program_id === result.program_id
+              )
+          ) {
             gigsMap.get(gigsId).programing.push({
               program_id: result.program_id,
               gig_id: result.gig_id,
@@ -527,8 +554,12 @@ function listgigsdata(gigId) {
               update_date: result.program_update_date,
             });
           }
-        
-          if (!gigsMap.get(gigsId).plantypes.some(plantype => plantype.plan_id === result.plan_id)) {
+
+          if (
+            !gigsMap
+              .get(gigsId)
+              .plantypes.some((plantype) => plantype.plan_id === result.plan_id)
+          ) {
             gigsMap.get(gigsId).plantypes.push({
               plan_id: result.plan_id,
               gig_id: result.gig_id,
@@ -542,9 +573,16 @@ function listgigsdata(gigId) {
               content_upload: result.content_upload,
               create_date: result.create_date,
               update_date: result.update_date,
+              price:result.price
             });
           }
-          if (!gigsMap.get(gigsId).question.some(questions => questions.guestion_id === result.guestion_id)) {
+          if (
+            !gigsMap
+              .get(gigsId)
+              .question.some(
+                (questions) => questions.guestion_id === result.guestion_id
+              )
+          ) {
             gigsMap.get(gigsId).question.push({
               guestion_id: result.guestion_id,
               gig_id: result.gig_id,
@@ -555,7 +593,13 @@ function listgigsdata(gigId) {
             });
           }
 
-          if (!gigsMap.get(gigsId).websiteFeatures.some(website => website.web_id === result.web_id)) {
+          if (
+            !gigsMap
+              .get(gigsId)
+              .websiteFeatures.some(
+                (website) => website.web_id === result.web_id
+              )
+          ) {
             gigsMap.get(gigsId).websiteFeatures.push({
               web_id: result.web_id,
               gig_id: result.gig_id,
@@ -564,10 +608,26 @@ function listgigsdata(gigId) {
               update_date: result.update_date,
             });
           }
-        
-        
+
+          if (
+            !gigsMap
+              .get(gigsId)
+              .rating.some(
+                (ratings) => ratings.rating_id === result.rating_id
+              )
+          ) {
+            gigsMap.get(gigsId).rating.push({
+              rating_id: result.rating_id,
+              gig_id: result.gig_id,
+              seller: {
+                seller_id: result.seller_id,
+                username: result.username,
+              },
+              rating: result.rating,
+              comment :result.comment
+            });
+          }
         });
-        
 
         const categoriesWithSubcategories = Array.from(gigsMap.values());
 
@@ -582,23 +642,17 @@ function listgigsdata(gigId) {
   });
 }
 
-
-function insertRating(data,userId) {
-  const { gig_id, rating,} = data;
+function insertRating(data, userId) {
+  const { gig_id, rating ,comment} = data;
   return new Promise((resolve, reject) => {
-  
     const query = `
       INSERT INTO gigs_rating
-      (gig_id,seller_id,rating)
-      VALUES (?, ?, ?)
+      (gig_id,seller_id,rating,comment)
+      VALUES (?, ?, ?, ?)
     `;
 
     console.log("Executing query:", query);
-    const values = [
-      gig_id,
-      userId,
-      rating,
-    ];
+    const values = [gig_id, userId, rating,comment];
 
     db.query(query, values, (err, result) => {
       if (err) {
@@ -609,9 +663,6 @@ function insertRating(data,userId) {
     });
   });
 }
-
-
-
 
 // function getSubcategoryId(subId) {
 //   return new Promise((resolve, reject) => {
@@ -627,7 +678,7 @@ function insertRating(data,userId) {
 //             ss.username,
 //             ss.image,
 //             pp.id as plan_type,
-//             pp.gig_id, 
+//             pp.gig_id,
 //             pp.price,
 //             gi.id as content_id,
 //             gi.gig_id,
@@ -647,14 +698,14 @@ function insertRating(data,userId) {
 //       if (error) {
 //         console.error("Error executing query:", error);
 //         reject(error);
-//       } 
+//       }
 
 //       else {
 //         const gigsMap = new Map();
 
 //         results.forEach((result) => {
 //           const gigsId = result.subcategory_id;
-        
+
 //           if (!gigsMap.has(gigsId)) {
 //             gigsMap.set(gigsId, {
 //               category_id: gigsId,
@@ -680,10 +731,9 @@ function insertRating(data,userId) {
 
 //               },
 //               plantypes: [],
-             
+
 //             });
 //           }
-        
 
 //           if (!gigsMap.get(gigsId).plantypes.some(plantype => plantype.plan_type === result.plan_type)) {
 //             gigsMap.get(gigsId).plantypes.push({
@@ -692,10 +742,8 @@ function insertRating(data,userId) {
 //               price  : result.price,
 //             });
 //           }
-        
-        
+
 //         });
-        
 
 //         const categoriesWithSubcategories = Array.from(gigsMap.values());
 
@@ -740,7 +788,6 @@ function getSubcategoryId(cd) {
 
         WHERE c.id = ? AND pp.plan_type = 'basic';`;
 
-        
     db.query(query, cd, (error, results) => {
       if (error) {
         console.error("Error executing query:", error);
@@ -749,25 +796,24 @@ function getSubcategoryId(cd) {
         const data = results.map((row) => ({
           cd: row.cd,
           category_id: results.category_id,
-          name : row.name,
-          gigsData :{
+          name: row.name,
+          gigsData: {
             gig_ids: row.gig_ids,
             subcategory_id: row.subcategory_id,
-            gig_title : row.gig_title,
+            gig_title: row.gig_title,
           },
-          seller : {
+          seller: {
             seller_id: row.seller_id,
             username: row.username,
-            image  : row.image,
+            image: row.image,
           },
-          gigsimages : {
+          gigsimages: {
             content_id: row.content_id,
             gig_id: row.gig_id,
             image1: row.image1,
-            image2  : row.image2,
-            image3  : row.image3,
-            vedio  : row.vedio,
-
+            image2: row.image2,
+            image3: row.image3,
+            vedio: row.vedio,
           },
         }));
 
@@ -778,7 +824,6 @@ function getSubcategoryId(cd) {
     });
   });
 }
-
 
 function checkGigidout(gigs_id) {
   return new Promise((resolve, reject) => {
@@ -793,12 +838,23 @@ function checkGigidout(gigs_id) {
   });
 }
 
-
-
-
-function CreateOffer(gigs_id, offer_type, creator_id, receive_id, offer_expire,role) {
+function CreateOffer(
+  gigs_id,
+  offer_type,
+  creator_id,
+  receive_id,
+  offer_expire,
+  role
+) {
   return new Promise((resolve, reject) => {
-    if (!gigs_id || !offer_type || !creator_id || !receive_id || !offer_expire || !role ){
+    if (
+      !gigs_id ||
+      !offer_type ||
+      !creator_id ||
+      !receive_id ||
+      !offer_expire ||
+      !role
+    ) {
       return reject("Missing required parameters");
     }
 
@@ -810,7 +866,14 @@ function CreateOffer(gigs_id, offer_type, creator_id, receive_id, offer_expire,r
 
     console.log("Executing query:", query);
 
-    const values = [gigs_id, offer_type, creator_id, receive_id, offer_expire,role];
+    const values = [
+      gigs_id,
+      offer_type,
+      creator_id,
+      receive_id,
+      offer_expire,
+      role,
+    ];
     db.query(query, values, (err, result) => {
       if (err) {
         console.error("Error in insert query:", err);
@@ -824,7 +887,7 @@ function CreateOffer(gigs_id, offer_type, creator_id, receive_id, offer_expire,r
 
 function offertype(offer_id, describe_offer, revision, delivery_day, price) {
   return new Promise((resolve, reject) => {
-    if (!offer_id || !describe_offer || !revision || !delivery_day || !price ){
+    if (!offer_id || !describe_offer || !revision || !delivery_day || !price) {
       return reject("Missing required parameters");
     }
 
@@ -850,9 +913,9 @@ function offertype(offer_id, describe_offer, revision, delivery_day, price) {
 
 const aprrovedOffer = (status, id) => {
   const updateQuery = "UPDATE offer_create SET status = ? WHERE id = ?";
-  
+
   const values = [status, id];
-  
+
   return new Promise((resolve, reject) => {
     try {
       db.query(updateQuery, values, (err, result) => {
@@ -876,7 +939,6 @@ const aprrovedOffer = (status, id) => {
   });
 };
 
-
 async function getOfferById(offerId) {
   return new Promise((resolve, reject) => {
     const query = "SELECT * FROM offer_create WHERE id = ?";
@@ -889,8 +951,6 @@ async function getOfferById(offerId) {
     });
   });
 }
-
-
 
 async function odersales(n, userId, role) {
   return new Promise(async (resolve, reject) => {
@@ -928,8 +988,6 @@ async function odersales(n, userId, role) {
     });
   });
 }
-
-
 
 async function totalgetorders(n, userId, role) {
   return new Promise(async (resolve, reject) => {
@@ -1025,5 +1083,5 @@ module.exports = {
   getOfferById,
   odersales,
   totalgetorders,
-  yearlyCheck
+  yearlyCheck,
 };

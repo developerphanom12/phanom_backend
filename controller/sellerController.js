@@ -475,22 +475,22 @@ const subcateogydata = async (req, res) => {
 const addingrating = async (req, res) => {
   const userId = req.user.id;
 
-  if (req.user.role !== "seller") {
+  if (req.user.role !== "buyer") {
     return res
       .status(403)
       .json({ status: 403, error: "Forbidden for regular users" });
   }
 
-  const { gig_id, rating } = req.body;
+  const { gig_id, rating,comment } = req.body;
   try {
-    const ratings = { gig_id, rating };
+    const ratings = { gig_id, rating,comment };
 
     const categoryids = await sellerService.checkGigid(gig_id);
     if (!categoryids) {
       return res.status(404).json({ status: 404, message: "Gig id not found" });
     }
 
-    const userid = await sellerService.insertRating(ratings, userId);
+    const userid = await sellerService.insertRating(ratings, userId,comment);
 
     res.status(201).json({
       message: "Data added successfully",

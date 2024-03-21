@@ -173,6 +173,7 @@ const validatecontentschema = (req, res, next) => {
 const gigsrating = Joi.object({
   gig_id: Joi.number().required(),
   rating: Joi.number().min(1).max(5).precision(1).required(),
+  comment :Joi.string().required()
 });
 
 const validaterating = (req, res, next) => {
@@ -263,6 +264,24 @@ const createOffer = async (req, res) => {
   }
 }
 
+
+
+const buyergister = Joi.object({
+  username: Joi.string().required(),
+  password: Joi.string().required(),
+  email: Joi.string().required().email(),
+});
+
+const vaildatebuyer = (req, res, next) => {
+  const { error } = buyergister.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  next();
+};
+
 module.exports = {
   validatevalue,
   validatecategory,
@@ -276,5 +295,6 @@ module.exports = {
   validatecontentschema,
   validaterating,
   validateoffer,
-  createOffer
+  createOffer,
+  vaildatebuyer
 };
