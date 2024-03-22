@@ -329,29 +329,20 @@ const addingmediaGigs = async (req, res) => {
   const { gig_id } = req.body;
   const { image1, image2, image3, vedio } = req.files;
 
-  if (
-    !isValidImagePath(image1[0].path) ||
-    !isValidImagePath(image2[0].path) ||
-    !isValidImagePath(image3[0].path) ||
-    !isValidvedioPath(vedio[0].path)
-  ) {
-    return res
-      .status(400)
-      .json({ status: 400, error: "Invalid image paths  " });
-  }
-
-  const image1Folder = image1[0].path.split("/")[1];
-  const image2Folder = image2[0].path.split("/")[1];
-  const image3Folder = image3[0].path.split("/")[1];
-  const vedioFolder = vedio[0].path.split("/")[1];
+  const image1Filename = image1 ? image1[0].filename : null;
+  const image2Filename = image2 ? image2[0].filename : null;
+  const image3Filename = image3 ? image3[0].filename : null;
+  const vedioFilename = vedio ? vedio[0].filename : null;
 
   const data = {
     gig_id,
-    image1: image1Folder,
-    image2: image2Folder,
-    image3: image3Folder,
-    vedio: vedioFolder,
+    image1: image1Filename,
+    image2: image2Filename,
+    image3: image3Filename,
+    vedio: vedioFilename
   };
+
+  console.log("gogog", data);
 
   try {
     const catId = await sellerService.checkGigid(gig_id);
@@ -369,16 +360,15 @@ const addingmediaGigs = async (req, res) => {
       data: userid,
     });
   } catch (error) {
-    console.error("Error in add vedio images:", error);
+    console.error("Error in add video images:", error);
     res.status(500).json({
       status: 500,
-      error: "Failed to add vedio images",
+      error: "Failed to add video images",
       message: error.message,
       stack: error.stack,
     });
   }
 };
-
 function isValidImagePath(path) {
   if (typeof path !== "string") {
     return false;

@@ -1129,6 +1129,67 @@ const activategig = (is_open, id, callback) => {
     res.status(error.status || 500).json(error);
   }
 };
+
+
+
+function activegigsdget(cd) {
+  return new Promise((resolve, reject) => {
+    const query = `
+        SELECT DISTINCT
+            gd.id as gig_ids,
+            gd.subcategory_id,
+            gd.gig_title,
+            ss.id as seller_id,
+            ss.username,
+            gi.id as content_id,
+            gi.gig_id,
+            gi.image1,
+            gi.image2,
+            gi.image3,
+            gi.vedio
+            FROM  gigs_create gd
+        LEFT JOIN seller ss ON gd.seller_id = ss.id
+        LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
+        WHERE c.id = ? AND  ;`;
+
+    db.query(query, cd, (error, results) => {
+      if (error) {
+        console.error("Error executing query:", error);
+        reject(error);
+      } else {
+        const data = results.map((row) => ({
+          
+            gig_ids: row.gig_ids,
+            subcategory_id: row.subcategory_id,
+            gig_title: row.gig_title,
+            seller: {
+            seller_id: row.seller_id,
+            username: row.username,
+          },
+          gigsimages: {
+            content_id: row.content_id,
+            gig_id: row.gig_id,
+            image1: row.image1,
+            image2: row.image2,
+            image3: row.image3,
+            vedio: row.vedio,
+          },
+
+          price : {
+            plan_type :row.plan_type,
+            gig_id:row.gig_id,
+            price: row.price
+          }
+        }));
+
+        resolve(data);
+
+        console.log("All data retrieved successfully");
+      }
+    });
+  });
+}
+
 module.exports = {
   sellergister,
   checkusername,
@@ -1156,5 +1217,6 @@ module.exports = {
   totalgetorders,
   yearlyCheck,
   getsellerdata,
-  activategig
+  activategig,
+  activegigsdget
 };
