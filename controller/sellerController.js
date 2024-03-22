@@ -69,13 +69,13 @@ const addgigadata = async (req, res) => {
         .json({ status: 404, message: "Category not found" });
     }
 
-    const subcategoryId = await sellerService.CheckSubCategory(category_id);
-    if (!subcategoryId) {
-      return res
-        .status(404)
-        .json({ status: 404, message: "Sub Category not found" });
-    }
-console.log("sub",subcategoryId)
+//     const subcategoryId = await sellerService.CheckSubCategory(category_id);
+//     if (!subcategoryId) {
+//       return res
+//         .status(404)
+//         .json({ status: 404, message: "Sub Category not found" });
+//     }
+// console.log("sub",subcategoryId)
     const userid = await sellerService.insertGigsData(
       gig_title,
       category_id,
@@ -691,6 +691,34 @@ const checkordersales = async (req, res) => {
 
 
 
+const profiledata = async (req, res) => {
+  const cd = req.user.id;
+
+  if (!cd) {
+    res.status(404).json({ message: "please provide Id", status: 404 });
+  }
+  try {
+    const data = await sellerService.getsellerdata(cd);
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ status: 404, error: "Data not found" });
+    }
+    res.status(201).json({
+      status: 201,
+      message: data,
+    });
+  } catch (error) {
+    console.error("Error to get data:", error);
+    res.status(500).json({
+      status: 500,
+      error: "failed to get data ",
+      message: error.message,
+      stack: error.stack,
+    });
+  }
+};
+
+
 module.exports = {
   createseller,
   addgigadata,
@@ -705,5 +733,6 @@ module.exports = {
   addingrating,
   createOffer,
   userApproved,
-  checkordersales
+  checkordersales,
+  profiledata
 };

@@ -575,7 +575,7 @@ function listgigsdata(gigId) {
               update_date: result.update_date,
               price:result.price
             });
-          }
+          }  
           if (
             !gigsMap
               .get(gigsId)
@@ -1058,6 +1058,44 @@ async function yearlyCheck(month = null, userId, userRole) {
   });
 }
 
+
+function getsellerdata(cd) {
+  return new Promise((resolve, reject) => {
+    const query = `
+        SELECT DISTINCT
+            c.id AS cd,
+            c.username,
+            c.category_id,
+            c.technology_name,
+            cd.id as category_id,
+            cd.category_name
+            FROM  seller c
+        LEFT JOIN category cd ON c.category_id = cd.id
+        WHERE c.id = ? ;`;
+
+    db.query(query, cd, (error, results) => {
+      if (error) {
+        console.error("Error executing query:", error);
+        reject(error);
+      } else {
+        const data = results.map((row) => ({
+          cd: row.cd,
+          username: row.username,
+          technology_name: row.technology_name,
+          category: {
+            category_id: row.category_id,
+            category_name: row.category_name,
+          },        
+        }));
+
+        resolve(data);
+
+        console.log("All data retrieved successfully",data);
+      }
+    });
+  });
+}
+
 module.exports = {
   sellergister,
   checkusername,
@@ -1084,4 +1122,5 @@ module.exports = {
   odersales,
   totalgetorders,
   yearlyCheck,
+  getsellerdata
 };

@@ -34,6 +34,7 @@ router.post('/offerupdate',validateoffer,authentication, sellercontroller.userAp
 
 router.get('/ordersales',authentication, sellercontroller.checkordersales)
 
+router.get('/sellerProfile',authentication,sellercontroller.profiledata);
 
 
 module.exports = router;
