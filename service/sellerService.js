@@ -573,9 +573,9 @@ function listgigsdata(gigId) {
               content_upload: result.content_upload,
               create_date: result.create_date,
               update_date: result.update_date,
-              price:result.price
+              price: result.price,
             });
-          }  
+          }
           if (
             !gigsMap
               .get(gigsId)
@@ -612,9 +612,7 @@ function listgigsdata(gigId) {
           if (
             !gigsMap
               .get(gigsId)
-              .rating.some(
-                (ratings) => ratings.rating_id === result.rating_id
-              )
+              .rating.some((ratings) => ratings.rating_id === result.rating_id)
           ) {
             gigsMap.get(gigsId).rating.push({
               rating_id: result.rating_id,
@@ -624,7 +622,7 @@ function listgigsdata(gigId) {
                 username: result.username,
               },
               rating: result.rating,
-              comment :result.comment
+              comment: result.comment,
             });
           }
         });
@@ -643,7 +641,7 @@ function listgigsdata(gigId) {
 }
 
 function insertRating(data, userId) {
-  const { gig_id, rating ,comment} = data;
+  const { gig_id, rating, comment } = data;
   return new Promise((resolve, reject) => {
     const query = `
       INSERT INTO gigs_rating
@@ -652,7 +650,7 @@ function insertRating(data, userId) {
     `;
 
     console.log("Executing query:", query);
-    const values = [gig_id, userId, rating,comment];
+    const values = [gig_id, userId, rating, comment];
 
     db.query(query, values, (err, result) => {
       if (err) {
@@ -816,11 +814,11 @@ function getSubcategoryId(cd) {
             vedio: row.vedio,
           },
 
-          price : {
-            plan_type :row.plan_type,
-            gig_id:row.gig_id,
-            price: row.price
-          }
+          price: {
+            plan_type: row.plan_type,
+            gig_id: row.gig_id,
+            price: row.price,
+          },
         }));
 
         resolve(data);
@@ -1064,7 +1062,6 @@ async function yearlyCheck(month = null, userId, userRole) {
   });
 }
 
-
 function getsellerdata(cd) {
   return new Promise((resolve, reject) => {
     const query = `
@@ -1091,45 +1088,40 @@ function getsellerdata(cd) {
           category: {
             category_id: row.category_id,
             category_name: row.category_name,
-          },        
+          },
         }));
 
         resolve(data);
 
-        console.log("All data retrieved successfully",data);
+        console.log("All data retrieved successfully", data);
       }
     });
   });
 }
 
-
-
 const activategig = (is_open, id, callback) => {
   const updateQuery = "UPDATE gigs_create SET is_open = ? WHERE id = ?";
   try {
-    
-      db.query(updateQuery, [is_open, id], (updateError, updateResult) => {
-        if (updateError) {
-          console.error("Error updating telecaller status:", updateError);
-          return callback({
-            status: 500,
-            error: "Failed to update telecaller status.",
-          });
-        }
+    db.query(updateQuery, [is_open, id], (updateError, updateResult) => {
+      if (updateError) {
+        console.error("Error updating telecaller status:", updateError);
+        return callback({
+          status: 500,
+          error: "Failed to update telecaller status.",
+        });
+      }
 
-        if (updateResult.affectedRows === 0) {
-          console.error("gig not found in the update:", updateResult);
-          return callback({ error: "gig not found" });
-        }
+      if (updateResult.affectedRows === 0) {
+        console.error("gig not found in the update:", updateResult);
+        return callback({ error: "gig not found" });
+      }
 
-        callback(null, {message: "gig activate successfully" });
-      });
-    ;
+      callback(null, { message: "gig activate successfully" });
+    });
   } catch (error) {
     res.status(error.status || 500).json(error);
   }
 };
-
 
 function activegigsdget(userid, isOpen) {
   return new Promise((resolve, reject) => {
@@ -1186,7 +1178,7 @@ function activegigsdget(userid, isOpen) {
           gig_ids: row.gig_ids,
           subcategory_id: row.subcategory_id,
           gig_title: row.gig_title,
-          date_create : row.date_create,
+          date_create: row.date_create,
           seller: {
             seller_id: row.seller_id,
             username: row.username,
@@ -1209,6 +1201,245 @@ function activegigsdget(userid, isOpen) {
   });
 }
 
+function updatecreatedata(id, updatedUserData) {
+  return new Promise((resolve, reject) => {
+    const { gig_title, category_id, subcategory_id, service_type, tags } =
+      updatedUserData;
+
+    const updateQuery = `
+          UPDATE gigs_create u
+          SET 
+              u.gig_title = COALESCE(?, u.gig_title),
+              u.category_id = COALESCE(?, u.category_id),
+              u.subcategory_id = COALESCE(?, u.subcategory_id),
+              u.service_type = COALESCE(?, u.service_type),
+              u.tags = COALESCE(?, u.tags)
+          WHERE u.id = ?;
+      `;
+
+    db.query(
+      updateQuery,
+      [gig_title, category_id, subcategory_id, service_type, tags, id],
+      (updateError, updateResult) => {
+        if (updateError) {
+          reject(updateError);
+          console.error(
+            "Error updating courses information and tutionfees:",
+            updateError
+          );
+        } else {
+          if (updateResult.affectedRows > 0) {
+            const fetchQuery = `
+                          SELECT * FROM gigs_create u
+                          WHERE u.id = ?;
+                      `;
+
+            db.query(fetchQuery, [id], (fetchError, fetchResult) => {
+              if (fetchError) {
+                reject(fetchError);
+                console.error(
+                  "Error fetching updated courses data:",
+                  fetchError
+                );
+              } else {
+                if (fetchResult.length > 0) {
+                  const updatedUserData = fetchResult[0];
+                  resolve(updatedUserData);
+                  console.log(
+                    "courses information and tutionfees updated successfully",
+                    updatedUserData
+                  );
+                } else {
+                  resolve(null);
+                }
+              }
+            });
+          } else {
+            resolve(null);
+          }
+        }
+      }
+    );
+  });
+}
+const updateplantypedata = async (id, updatedUserData) => {
+  try {
+    const {
+      title,
+      description,
+      delivery_time,
+      number_of_pages,
+      revision,
+      plugin_extension,
+      price,
+    } = updatedUserData;
+
+    const updateQuery = `
+      UPDATE gigs_plantype u
+      SET 
+          u.title = COALESCE(?, u.title),
+          u.description = COALESCE(?, u.description),
+          u.delivery_time = COALESCE(?, u.delivery_time),
+          u.number_of_pages = COALESCE(?, u.number_of_pages),
+          u.revision = COALESCE(?, u.revision),
+          u.plugin_extension = COALESCE(?, u.plugin_extension),
+          u.price = COALESCE(?, u.price)
+      WHERE u.id = ?;
+    `;
+
+    const updateResult = await new Promise((resolve, reject) => {
+      db.query(
+        updateQuery,
+        [
+          title,
+          description,
+          delivery_time,
+          number_of_pages,
+          revision,
+          plugin_extension,
+          price,
+          id,
+        ],
+        (updateError, updateResult) => {
+          if (updateError) {
+            reject(updateError);
+          } else {
+            resolve(updateResult);
+          }
+        }
+      );
+    });
+
+    if (updateResult.affectedRows > 0) {
+      const fetchQuery = `
+        SELECT * FROM gigs_plantype u
+        WHERE u.id = ?;
+      `;
+
+      const fetchResult = await new Promise((resolve, reject) => {
+        db.query(fetchQuery, [id], (fetchError, fetchResult) => {
+          if (fetchError) {
+            reject(fetchError);
+          } else {
+            resolve(fetchResult);
+          }
+        });
+      });
+
+      if (fetchResult.length > 0) {
+        return fetchResult[0];
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error updating gig plantype:", error);
+    throw new Error("Failed to update gig plantype data");
+  }
+};
+
+// const updategigPLantype = async (req, res) => {
+//   const id = req.params.id;
+//   const userRole = req.user.role;
+//   const { title, description, delivery_time, number_of_pages, revision, plugin_extension, price } = req.body;
+
+//   try {
+//     if (userRole !== "seller") {
+//       return res.status(403).json({ status: 403, message: "Forbidden for regular user" });
+//     }
+
+//     const updatedGig = await updateplantypedata(id, {
+//       title,
+//       description,
+//       delivery_time,
+//       number_of_pages,
+//       revision,
+//       plugin_extension,
+//       price
+//     });
+
+//     if (!updatedGig) {
+//       return res.status(400).json({ status: 400, error: "Failed to update gig data" });
+//     }
+
+//     return res.status(200).json({
+//       status: 200,
+//       message: "Gig data updated successfully",
+//       data: updatedGig,
+//     });
+//   } catch (error) {
+//     console.error("Internal Server Error:", error);
+//     return res.status(500).json({
+//       status: 500,
+//       errorMessage: error.message,
+//     });
+//   }
+// };
+
+
+
+const updateContents = async (id, updatedUserData) => {
+  try {
+    const {
+      content,
+      
+    } = updatedUserData;
+
+    const updateQuery = `
+      UPDATE gigs_texteditor u
+      SET 
+          u.content = COALESCE(?, u.content)
+      WHERE u.id = ?;
+    `;
+
+    const updateResult = await new Promise((resolve, reject) => {
+      db.query(
+        updateQuery,
+        [
+         content,
+          id,
+        ],
+        (updateError, updateResult) => {
+          if (updateError) {
+            reject(updateError);
+          } else {
+            resolve(updateResult);
+          }
+        }
+      );
+    });
+
+    if (updateResult.affectedRows > 0) {
+      const fetchQuery = `
+        SELECT * FROM gigs_texteditor u
+        WHERE u.id = ?;
+      `;
+
+      const fetchResult = await new Promise((resolve, reject) => {
+        db.query(fetchQuery, [id], (fetchError, fetchResult) => {
+          if (fetchError) {
+            reject(fetchError);
+          } else {
+            resolve(fetchResult);
+          }
+        });
+      });
+
+      if (fetchResult.length > 0) {
+        return fetchResult[0];
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error updating gig plantype:", error);
+    throw new Error("Failed to update gig plantype data");
+  }
+};
 
 module.exports = {
   sellergister,
@@ -1238,5 +1469,8 @@ module.exports = {
   yearlyCheck,
   getsellerdata,
   activategig,
-  activegigsdget
+  activegigsdget,
+  updatecreatedata,
+  updateplantypedata,
+  updateContents
 };

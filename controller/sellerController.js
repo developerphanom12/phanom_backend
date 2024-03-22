@@ -60,7 +60,8 @@ const addgigadata = async (req, res) => {
       .json({ status: 403, error: "Forbidden for regular users" });
   }
 
-  const { gig_title, category_id, subcategory_id, service_type, tags } = req.body;
+  const { gig_title, category_id, subcategory_id, service_type, tags } =
+    req.body;
   try {
     const catId = await sellerService.checkcatid(category_id);
     if (!catId) {
@@ -69,17 +70,17 @@ const addgigadata = async (req, res) => {
         .json({ status: 404, message: "Category not found" });
     }
 
-//     const subcategoryId = await sellerService.CheckSubCategory(category_id);
-//     if (!subcategoryId) {
-//       return res
-//         .status(404)
-//         .json({ status: 404, message: "Sub Category not found" });
-//     }
-// console.log("sub",subcategoryId)
+    //     const subcategoryId = await sellerService.CheckSubCategory(category_id);
+    //     if (!subcategoryId) {
+    //       return res
+    //         .status(404)
+    //         .json({ status: 404, message: "Sub Category not found" });
+    //     }
+    // console.log("sub",subcategoryId)
     const userid = await sellerService.insertGigsData(
       gig_title,
       category_id,
-      subcategory_id,  
+      subcategory_id,
       service_type,
       tags,
       userId
@@ -98,7 +99,7 @@ const addgigadata = async (req, res) => {
       message: "Data added successfully",
       status: 201,
       data: {
-        id: userid
+        id: userid,
       },
     });
   } catch (error) {
@@ -222,7 +223,7 @@ const addingGigsPrice = async (req, res) => {
 
     const userid = await sellerService.insertPriceData(data);
 
-    res.status(201).json({  
+    res.status(201).json({
       message: "Data added successfully",
       status: 201,
       data: userid,
@@ -339,7 +340,7 @@ const addingmediaGigs = async (req, res) => {
     image1: image1Filename,
     image2: image2Filename,
     image3: image3Filename,
-    vedio: vedioFilename
+    vedio: vedioFilename,
   };
 
   console.log("gogog", data);
@@ -384,7 +385,7 @@ function isValidImagePath(path) {
   const lowercasePath = trimmedPath.toLowerCase();
   if (!validExtensions.some((ext) => lowercasePath.endsWith(ext))) {
     return false;
-  }     
+  }
 
   console.log("ddd", lowercasePath);
   return true;
@@ -471,16 +472,16 @@ const addingrating = async (req, res) => {
       .json({ status: 403, error: "Forbidden for regular users" });
   }
 
-  const { gig_id, rating,comment } = req.body;
+  const { gig_id, rating, comment } = req.body;
   try {
-    const ratings = { gig_id, rating,comment };
+    const ratings = { gig_id, rating, comment };
 
     const categoryids = await sellerService.checkGigid(gig_id);
     if (!categoryids) {
       return res.status(404).json({ status: 404, message: "Gig id not found" });
     }
 
-    const userid = await sellerService.insertRating(ratings, userId,comment);
+    const userid = await sellerService.insertRating(ratings, userId, comment);
 
     res.status(201).json({
       message: "Data added successfully",
@@ -575,10 +576,10 @@ const createOffer = async (req, res) => {
 const userApproved = async (req, res) => {
   const userId = req.user.id;
   const userRole = req.user.role;
- 
+
   try {
     const { id, status } = req.body;
-    
+
     if (userRole !== "seller" && userRole !== "buyer") {
       throw {
         status: 403,
@@ -591,12 +592,16 @@ const userApproved = async (req, res) => {
       return res.status(404).json({ status: 404, message: "Offer not found" });
     }
     if (offer.creator_id !== userId || offer.role !== userRole) {
-      return res.status(403).json({ status: 403, message: "userid and role not match with offer id" });
-
+      return res
+        .status(403)
+        .json({
+          status: 403,
+          message: "userid and role not match with offer id",
+        });
     }
 
     await sellerService.aprrovedOffer(status, id);
-    
+
     res.status(200).json({
       status: 200,
       message: "Offer updated successfully",
@@ -612,7 +617,6 @@ const userApproved = async (req, res) => {
   }
 };
 
-
 const checkordersales = async (req, res) => {
   const userSelection = req.query.selection;
   const userId = req.user.id;
@@ -621,8 +625,16 @@ const checkordersales = async (req, res) => {
 
   try {
     if (userSelection === "last30days") {
-      const last30DaysData = await sellerService.odersales(30, userId, userRole);
-      const total30days = await sellerService.totalgetorders(30, userId, userRole);
+      const last30DaysData = await sellerService.odersales(
+        30,
+        userId,
+        userRole
+      );
+      const total30days = await sellerService.totalgetorders(
+        30,
+        userId,
+        userRole
+      );
 
       return res.status(200).json({
         status: 200,
@@ -633,8 +645,16 @@ const checkordersales = async (req, res) => {
         },
       });
     } else if (userSelection === "last90days") {
-      const last90DaysData = await sellerService.odersales(90, userId, userRole);
-      const total90days = await sellerService.totalgetorders(30, userId, userRole);
+      const last90DaysData = await sellerService.odersales(
+        90,
+        userId,
+        userRole
+      );
+      const total90days = await sellerService.totalgetorders(
+        30,
+        userId,
+        userRole
+      );
 
       return res.status(200).json({
         status: 200,
@@ -646,8 +666,12 @@ const checkordersales = async (req, res) => {
       });
     } else if (selectedMonth === "currentMonth") {
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1; 
-      const currentMonthData = await sellerService.yearlyCheck(currentMonth, userId, userRole);
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentMonthData = await sellerService.yearlyCheck(
+        currentMonth,
+        userId,
+        userRole
+      );
 
       if (currentMonthData.length === 0) {
         return res.status(404).json({
@@ -679,8 +703,6 @@ const checkordersales = async (req, res) => {
   }
 };
 
-
-
 const profiledata = async (req, res) => {
   const cd = req.user.id;
 
@@ -707,9 +729,6 @@ const profiledata = async (req, res) => {
     });
   }
 };
-
-
-
 
 const activegigs = async (req, res) => {
   const { id, is_open } = req.body;
@@ -738,10 +757,9 @@ const activegigs = async (req, res) => {
         };
       }
 
-     
       res.status(201).json({
         status: 201,
-        message:result
+        message: result,
       });
     });
   } catch (error) {
@@ -749,21 +767,20 @@ const activegigs = async (req, res) => {
   }
 };
 
-
 const checktellereport = async (req, res) => {
   const userSelection = req.query.selection;
   const userId = req.user.id;
 
   try {
-     if (userSelection === "active") {
-      const activeGigs = await sellerService.activegigsdget(userId, 1); 
+    if (userSelection === "active") {
+      const activeGigs = await sellerService.activegigsdget(userId, 1);
       return res.status(200).json({
         status: 200,
         message: "Active gigs fetched successfully",
         data: activeGigs,
       });
     } else if (userSelection === "inactive") {
-      const inactiveGigs = await sellerService.activegigsdget(userId, 0); 
+      const inactiveGigs = await sellerService.activegigsdget(userId, 0);
       return res.status(200).json({
         status: 200,
         message: "Inactive gigs fetched successfully",
@@ -784,6 +801,151 @@ const checktellereport = async (req, res) => {
     });
   }
 };
+
+
+const updateGigData = async (id, updatedData) => {
+  try {
+    const updatedGig = await sellerService.updatecreatedata(id, updatedData);
+    return updatedGig;
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    return res.status(500).json({
+      status: 500,
+      errorMessage: error.message,
+    });
+  }
+};
+const updateGigController = async (req, res) => {
+  const id = req.params.id;
+  const userRole = req.user.role;
+  const { gig_title, category_id, subcategory_id, service_type, tags } = req.body;
+
+  try {
+    if (userRole !== "seller") {
+      return res.status(403).json({ status: 403, message: "Forbidden for regular user" });
+    }
+    const updatedGig = await updateGigData(id, { gig_title, category_id, subcategory_id, service_type, tags });
+    if (!updatedGig) {
+      return res.status(400).json({ status: 400, error: "Failed to update gig data" });
+    }
+
+    
+    return res.status(200).json({
+      status: 200,
+      message: "Gig data updated successfully",
+      data: updatedGig,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: 500, error: "Internal server error" });
+  }
+};
+
+
+
+
+const updatePlantype = async (id, updatedData) => {
+  try {
+    const updatedGig = await sellerService.updateplantypedata(id, updatedData);
+    return updatedGig;
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    return res.status(500).json({
+      status: 500,
+      errorMessage: error.message,
+    });
+  }
+};
+
+
+
+const updateplantype = async (req, res) => {
+  const id = req.params.id;
+  console.log("iudf",id)
+  const userRole = req.user.role;
+  const {    title,
+    description,
+    delivery_time,
+    number_of_pages,
+    revision,
+    plugin_extension,
+    price, } = req.body;
+
+  try {
+    if (userRole !== "seller") {
+      return res.status(403).json({ status: 403, message: "Forbidden for regular user" });
+    }
+    const updatedGig = await updatePlantype(id, {    title,
+      description,
+      delivery_time,
+      number_of_pages,
+      revision,
+      plugin_extension,
+      price, });
+    if (!updatedGig) {
+      return res.status(400).json({ status: 400, error: "Failed to update gig data" });
+    }
+
+    
+    return res.status(200).json({
+      status: 200,
+      message: "Gig data updated successfully",
+      data: updatedGig,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: 500, error: "Internal server error" });
+  }
+};
+
+
+
+
+
+
+
+const updateContents = async (id, updatedData) => {
+  try {
+    const updatedGig = await sellerService.updateContents(id, updatedData);
+    return updatedGig;
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    return res.status(500).json({
+      status: 500,
+      errorMessage: error.message,
+    });
+  }
+};
+
+const updatecontent = async (req, res) => {
+  const id = req.params.id;
+  console.log("iudf",id)
+  const userRole = req.user.role;
+  const { content } = req.body;
+
+  try {
+    if (userRole !== "seller") {
+      return res.status(403).json({ status: 403, message: "Forbidden for regular user" });
+    }
+    const updatedGig = await updateContents(id, {    
+      content
+     });
+    if (!updatedGig) {
+      return res.status(400).json({ status: 400, error: "Failed to update gig data" });
+    }
+
+    
+    return res.status(200).json({
+      status: 200,
+      message: "Gig data updated successfully",
+      data: updatedGig,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: 500, error: "Internal server error" });
+  }
+};
+
 module.exports = {
   createseller,
   addgigadata,
@@ -801,5 +963,9 @@ module.exports = {
   checkordersales,
   profiledata,
   activegigs,
-  checktellereport
+  checktellereport,
+  updateGigController,
+  updateplantype,
+  updatecontent,
+  
 };

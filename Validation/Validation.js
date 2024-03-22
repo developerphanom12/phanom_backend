@@ -282,6 +282,29 @@ const vaildatebuyer = (req, res, next) => {
   next();
 };
 
+
+
+const updategigsPlantypeSchema = Joi.object({
+  title: Joi.string().max(255).optional(),
+  description: Joi.string().max(255).optional(),
+  delivery_time: Joi.number().integer().optional(),
+  number_of_pages: Joi.number().integer().min(1).max(10).optional(),
+  revision: Joi.number().integer().min(1).max(10).optional(),
+  plugin_extension: Joi.number().integer().min(1).max(10).optional(),
+  price: Joi.number().precision(2).optional(),
+  content_upload: Joi.boolean().default(true),
+});
+
+const updatevalidategigs = (req, res, next) => {
+  const { error } = updategigsPlantypeSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  next();
+};
+
 module.exports = {
   validatevalue,
   validatecategory,
@@ -296,5 +319,6 @@ module.exports = {
   validaterating,
   validateoffer,
   createOffer,
-  vaildatebuyer
+  vaildatebuyer,
+  updatevalidategigs
 };

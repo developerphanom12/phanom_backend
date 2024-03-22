@@ -1,7 +1,7 @@
 const  express = require('express')
 const router = express.Router();
 const sellercontroller = require('../controller/sellerController');
-const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema, validaterating, validateoffer, createOffer} = require('../Validation/Validation');
+const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema, validaterating, validateoffer, createOffer, updatevalidategigs} = require('../Validation/Validation');
 const authentication = require('../Middleware/Authentication');
 const { upload } = require('../Middleware/Multer');
 
@@ -38,8 +38,13 @@ router.get('/sellerProfile',authentication,sellercontroller.profiledata);
 
 router.post('/activategig', authentication, sellercontroller.activegigs)
 
-
 router.get('/gigsdatatat', authentication, sellercontroller.checktellereport)
+
+router.put('/updategigsdata/:id', authentication, sellercontroller.updateGigController)
+
+router.put('/updategigsplantypedata/:id',updatevalidategigs, authentication, sellercontroller.updateplantype)
+
+router.put('/updateContent/:id', authentication, sellercontroller.updatecontent)
 
 module.exports = router;
 
