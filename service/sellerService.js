@@ -815,6 +815,12 @@ function getSubcategoryId(cd) {
             image3: row.image3,
             vedio: row.vedio,
           },
+
+          price : {
+            plan_type :row.plan_type,
+            gig_id:row.gig_id,
+            price: row.price
+          }
         }));
 
         resolve(data);
