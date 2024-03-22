@@ -36,6 +36,7 @@ router.get('/ordersales',authentication, sellercontroller.checkordersales)
 
 router.get('/sellerProfile',authentication,sellercontroller.profiledata);
 
+router.post('/activategig', authentication, sellercontroller.activegigs)
 
 module.exports = router;
 

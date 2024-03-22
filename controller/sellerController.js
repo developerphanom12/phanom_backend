@@ -719,6 +719,47 @@ const profiledata = async (req, res) => {
 };
 
 
+
+
+const activegigs = async (req, res) => {
+  const { id, is_open } = req.body;
+
+  try {
+    if (req.user.role !== "seller") {
+      throw {
+        status: 403,
+        error: "Forbidden. Only seller can activate gig.",
+      };
+    }
+
+    if (is_open !== 1) {
+      throw {
+        status: 400,
+        error: "Invalid is_open value. It must  1.",
+      };
+    }
+
+    sellerService.activategig(is_open, id, (error, result) => {
+      if (error) {
+        console.error("Error updating activate gig:", error);
+        throw {
+          status: 500,
+          error: "Failed to update  activate gig.",
+        };
+      }
+
+     
+      res.status(201).json({
+        status: 201,
+        message:result
+      });
+    });
+  } catch (error) {
+    res.status(error.status || 500).json(error);
+  }
+};
+
+
 module.exports = {
   createseller,
   addgigadata,
@@ -734,5 +775,6 @@ module.exports = {
   createOffer,
   userApproved,
   checkordersales,
-  profiledata
+  profiledata,
+  activegigs
 };

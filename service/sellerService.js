@@ -1096,6 +1096,33 @@ function getsellerdata(cd) {
   });
 }
 
+
+
+const activategig = (is_open, id, callback) => {
+  const updateQuery = "UPDATE gigs_create SET is_open = ? WHERE id = ?";
+  try {
+    
+      db.query(updateQuery, [is_open, id], (updateError, updateResult) => {
+        if (updateError) {
+          console.error("Error updating telecaller status:", updateError);
+          return callback({
+            status: 500,
+            error: "Failed to update telecaller status.",
+          });
+        }
+
+        if (updateResult.affectedRows === 0) {
+          console.error("gig not found in the update:", updateResult);
+          return callback({ error: "gig not found" });
+        }
+
+        callback(null, {message: "gig activate successfully" });
+      });
+    ;
+  } catch (error) {
+    res.status(error.status || 500).json(error);
+  }
+};
 module.exports = {
   sellergister,
   checkusername,
@@ -1122,5 +1149,6 @@ module.exports = {
   odersales,
   totalgetorders,
   yearlyCheck,
-  getsellerdata
+  getsellerdata,
+  activategig
 };
