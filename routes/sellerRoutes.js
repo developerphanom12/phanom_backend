@@ -38,5 +38,8 @@ router.get('/sellerProfile',authentication,sellercontroller.profiledata);
 
 router.post('/activategig', authentication, sellercontroller.activegigs)
 
+
+router.get('/gigsdatatat', authentication, sellercontroller.checktellereport)
+
 module.exports = router;
 

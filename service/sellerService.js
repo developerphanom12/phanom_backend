@@ -1131,38 +1131,63 @@ const activategig = (is_open, id, callback) => {
 };
 
 
-
-function activegigsdget(cd) {
+function activegigsdget(userid, isOpen) {
   return new Promise((resolve, reject) => {
-    const query = `
+    let query;
+    if (isOpen === 1) {
+      query = `
         SELECT DISTINCT
-            gd.id as gig_ids,
-            gd.subcategory_id,
-            gd.gig_title,
-            ss.id as seller_id,
-            ss.username,
-            gi.id as content_id,
-            gi.gig_id,
-            gi.image1,
-            gi.image2,
-            gi.image3,
-            gi.vedio
-            FROM  gigs_create gd
+          gd.id as gig_ids,
+          gd.subcategory_id,
+          gd.gig_title,
+          gd.create_date as date_create,
+          ss.id as seller_id,
+          ss.username,
+          gi.id as content_id,
+          gi.gig_id,
+          gi.image1,
+          gi.image2,
+          gi.image3,
+          gi.vedio
+        FROM gigs_create gd
         LEFT JOIN seller ss ON gd.seller_id = ss.id
         LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
-        WHERE c.id = ? AND  ;`;
+        WHERE gd.seller_id = ? AND gd.is_open = 1;`;
+    } else if (isOpen === 0) {
+      query = `
+        SELECT DISTINCT
+          gd.id as gig_ids,
+          gd.subcategory_id,
+          gd.gig_title,
+          gd.create_date as date_create,
+          ss.id as seller_id,
+          ss.username,
+          gi.id as content_id,
+          gi.gig_id,
+          gi.image1,
+          gi.image2,
+          gi.image3,
+          gi.vedio
+        FROM gigs_create gd
+        LEFT JOIN seller ss ON gd.seller_id = ss.id
+        LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
+        WHERE gd.seller_id = ? AND gd.is_open = 0;`;
+    } else {
+      reject("Invalid value for isOpen parameter");
+      return;
+    }
 
-    db.query(query, cd, (error, results) => {
+    db.query(query, userid, (error, results) => {
       if (error) {
         console.error("Error executing query:", error);
         reject(error);
       } else {
         const data = results.map((row) => ({
-          
-            gig_ids: row.gig_ids,
-            subcategory_id: row.subcategory_id,
-            gig_title: row.gig_title,
-            seller: {
+          gig_ids: row.gig_ids,
+          subcategory_id: row.subcategory_id,
+          gig_title: row.gig_title,
+          date_create : row.date_create,
+          seller: {
             seller_id: row.seller_id,
             username: row.username,
           },
@@ -1174,12 +1199,6 @@ function activegigsdget(cd) {
             image3: row.image3,
             vedio: row.vedio,
           },
-
-          price : {
-            plan_type :row.plan_type,
-            gig_id:row.gig_id,
-            price: row.price
-          }
         }));
 
         resolve(data);
@@ -1189,6 +1208,7 @@ function activegigsdget(cd) {
     });
   });
 }
+
 
 module.exports = {
   sellergister,

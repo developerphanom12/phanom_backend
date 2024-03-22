@@ -750,6 +750,40 @@ const activegigs = async (req, res) => {
 };
 
 
+const checktellereport = async (req, res) => {
+  const userSelection = req.query.selection;
+  const userId = req.user.id;
+
+  try {
+     if (userSelection === "active") {
+      const activeGigs = await sellerService.activegigsdget(userId, 1); 
+      return res.status(200).json({
+        status: 200,
+        message: "Active gigs fetched successfully",
+        data: activeGigs,
+      });
+    } else if (userSelection === "inactive") {
+      const inactiveGigs = await sellerService.activegigsdget(userId, 0); 
+      return res.status(200).json({
+        status: 200,
+        message: "Inactive gigs fetched successfully",
+        data: inactiveGigs,
+      });
+    } else {
+      return res.status(400).json({
+        status: 400,
+        error: "Invalid user selection",
+      });
+    }
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    return res.status(500).json({
+      status: 500,
+      error: "An unexpected error occurred. Please try again later.",
+      errorMessage: error.message,
+    });
+  }
+};
 module.exports = {
   createseller,
   addgigadata,
@@ -766,5 +800,6 @@ module.exports = {
   userApproved,
   checkordersales,
   profiledata,
-  activegigs
+  activegigs,
+  checktellereport
 };
