@@ -310,7 +310,7 @@ const updatevalidategigs = (req, res, next) => {
 
 const deletegigid = Joi.object({
   id: Joi.string().required(),
-  is_deleted: Joi.string().valid(1).required() 
+  is_open: Joi.string().valid(1).required() 
 });
 
 const updatevalidatDleletegig = (req, res, next) => {

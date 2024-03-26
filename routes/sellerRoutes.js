@@ -28,26 +28,26 @@ router.post('/gigsrating',validaterating ,authentication, sellercontroller.addin
 
 router.get('/subcategoryData/:id',sellercontroller.subcateogydata);
 
-router.post('/offercreate',createOffer,authentication, sellercontroller.createOffer)
+router.post('/offercreate',createOffer,authentication, sellercontroller.createOffer);
 
-router.post('/offerupdate',validateoffer,authentication, sellercontroller.userApproved)
+router.post('/offerupdate',validateoffer,authentication, sellercontroller.userApproved);
 
-router.get('/ordersales',authentication, sellercontroller.checkordersales)
+router.get('/ordersales',authentication, sellercontroller.checkordersales);
 
 router.get('/sellerProfile',authentication,sellercontroller.profiledata);
 
-router.post('/activategig', authentication, sellercontroller.activegigs)
+router.post('/activategig',updatevalidatDleletegig, authentication, sellercontroller.activegigs);
 
-router.get('/gigsdatatat', authentication, sellercontroller.checktellereport)
+router.get('/gigsdatatat', authentication, sellercontroller.checktellereport);
 
-router.put('/updategigsdata/:id', authentication, sellercontroller.updateGigController)
+router.put('/updategigsdata/:id', authentication, sellercontroller.updateGigController);   
 
-router.put('/updategigsplantypedata/:id',updatevalidategigs, authentication, sellercontroller.updateplantype)
+router.put('/updategigsplantypedata/:id',updatevalidategigs, authentication, sellercontroller.updateplantype);
 
-router.put('/updateContent/:id', authentication, sellercontroller.updatecontent)
+router.put('/updateContent/:id', authentication, sellercontroller.updatecontent);
 
+router.post('/deletegig',updatevalidatDleletegig, authentication, sellercontroller.deletegig);
 
-router.post('/deletegig',updatevalidatDleletegig, authentication, sellercontroller.deletegig)
 
 module.exports = router;
 

@@ -989,7 +989,7 @@ const deletegig = async (req, res) => {
     console.error("Error to get data:", error);
     res.status(500).json({
       status: 500,
-      error: "failed to activate gig data ",
+      error: "failed to delete gig data ",
       message: error.message,
       stack: error.stack,
     });

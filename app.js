@@ -22,7 +22,6 @@ const ipAddress = '127.0.0.1';
 
 
 
-//Routes
 app.use('/api/admin',admin)
 app.use('/api/category',category)
 app.use('/api/seller',seller)
