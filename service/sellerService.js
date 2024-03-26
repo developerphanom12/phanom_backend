@@ -1144,7 +1144,7 @@ function activegigsdget(userid, isOpen) {
         FROM gigs_create gd
         LEFT JOIN seller ss ON gd.seller_id = ss.id
         LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
-        WHERE gd.seller_id = ? AND gd.is_open = 1;`;
+        WHERE gd.seller_id = ? AND gd.is_open = 1  AND gd.is_deleted = 0;`;
     } else if (isOpen === 0) {
       query = `
         SELECT DISTINCT
@@ -1163,7 +1163,7 @@ function activegigsdget(userid, isOpen) {
         FROM gigs_create gd
         LEFT JOIN seller ss ON gd.seller_id = ss.id
         LEFT JOIN gigs_imagedata gi ON gd.id = gi.gig_id
-        WHERE gd.seller_id = ? AND gd.is_open = 0;`;
+        WHERE gd.seller_id = ? AND gd.is_open = 0 AND gd.is_deleted = 0;`;
     } else {
       reject("Invalid value for isOpen parameter");
       return;
@@ -1194,8 +1194,6 @@ function activegigsdget(userid, isOpen) {
         }));
 
         resolve(data);
-
-        console.log("All data retrieved successfully");
       }
     });
   });
@@ -1441,6 +1439,38 @@ const updateContents = async (id, updatedUserData) => {
   }
 };
 
+
+
+
+const deletegig = (is_deleted, id, callback) => {
+  const updateQuery = "UPDATE gigs_create SET is_deleted = ? WHERE id = ?";
+  try {
+    db.query(updateQuery, [is_deleted, id], (updateError, updateResult) => {
+      if (updateError) {
+        console.error("Error Delete gig:", updateError);
+        return callback({
+          status: 500,
+          error: "Failed to  Delete gig.",
+        });
+      }
+
+      if (updateResult.affectedRows === 0) {
+        console.error("gig not found in the update:", updateResult);
+        return callback({ error: "gig not found" });
+      }
+
+      callback(null, { message: "gig  Delete  successfully" });
+    });
+  } catch (error) {
+    console.error("Error to get data:", error);
+    res.status(500).json({
+      status: 500,
+      error: "failed to delete gig data ",
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   sellergister,
   checkusername,
@@ -1472,5 +1502,6 @@ module.exports = {
   activegigsdget,
   updatecreatedata,
   updateplantypedata,
-  updateContents
+  updateContents,
+  deletegig
 };

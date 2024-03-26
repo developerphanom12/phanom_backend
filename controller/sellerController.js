@@ -762,8 +762,14 @@ const activegigs = async (req, res) => {
         message: result,
       });
     });
-  } catch (error) {
-    res.status(error.status || 500).json(error);
+  }catch (error) {
+    console.error("Error to get data:", error);
+    res.status(500).json({
+      status: 500,
+      error: "failed to activate gig data ",
+      message: error.message,
+      stack: error.stack,
+    });
   }
 };
 
@@ -946,6 +952,51 @@ const updatecontent = async (req, res) => {
   }
 };
 
+const deletegig = async (req, res) => {
+  const { id, is_deleted } = req.body;
+
+  try {
+    if (req.user.role !== "seller") {
+      throw {
+        status: 403,
+        error: "Forbidden. Only seller can activate gig.",
+      };
+    }
+
+    if (is_deleted !== 1) {
+     
+      return res.status(400).json({
+        status: 400,
+        error: "Invalid is_deleted value. It must  1.",
+      });
+    }
+
+    sellerService.deletegig(is_deleted, id, (error, result) => {
+      if (error) {
+        console.error("Error updating activate gig:", error);
+        throw {
+          status: 500,
+          error: "Failed to update  activate gig.",
+        };
+      }
+
+      res.status(201).json({
+        status: 201,
+        message: result,
+      });
+    });
+  }catch (error) {
+    console.error("Error to get data:", error);
+    res.status(500).json({
+      status: 500,
+      error: "failed to activate gig data ",
+      message: error.message,
+      stack: error.stack,
+    });
+  }
+};
+
+
 module.exports = {
   createseller,
   addgigadata,
@@ -967,5 +1018,6 @@ module.exports = {
   updateGigController,
   updateplantype,
   updatecontent,
+  deletegig
   
 };

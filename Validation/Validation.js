@@ -305,6 +305,24 @@ const updatevalidategigs = (req, res, next) => {
   next();
 };
 
+
+
+
+const deletegigid = Joi.object({
+  id: Joi.string().required(),
+  is_deleted: Joi.string().valid(1).required() 
+});
+
+const updatevalidatDleletegig = (req, res, next) => {
+  const { error } = deletegigid.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  next();
+};
+
 module.exports = {
   validatevalue,
   validatecategory,
@@ -320,5 +338,6 @@ module.exports = {
   validateoffer,
   createOffer,
   vaildatebuyer,
-  updatevalidategigs
+  updatevalidategigs,
+  updatevalidatDleletegig
 };
