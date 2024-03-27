@@ -1,7 +1,7 @@
 const  express = require('express')
 const router = express.Router();
 const sellercontroller = require('../controller/sellerController');
-const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema, validaterating, validateoffer, createOffer, updatevalidategigs, updatevalidatDleletegig} = require('../Validation/Validation');
+const { validateSeller, validatecreategigs, validatesellerlogin, validateaaraydata, validategigs, validatequestionSchema, validatecontentschema, validaterating, validateoffer, createOffer, updatevalidategigs, updatevalidatDleletegig, updatevalidatpause, updatevalidatactive} = require('../Validation/Validation');
 const authentication = require('../Middleware/Authentication');
 const { upload } = require('../Middleware/Multer');
 
@@ -36,7 +36,7 @@ router.get('/ordersales',authentication, sellercontroller.checkordersales);
 
 router.get('/sellerProfile',authentication,sellercontroller.profiledata);
 
-router.post('/activategig',updatevalidatDleletegig, authentication, sellercontroller.activegigs);
+router.post('/activategig',updatevalidatactive, authentication, sellercontroller.activegigs);
 
 router.get('/gigsdatatat', authentication, sellercontroller.checktellereport);
 
@@ -46,7 +46,7 @@ router.put('/updategigsplantypedata/:id',updatevalidategigs, authentication, sel
 
 router.put('/updateContent/:id', authentication, sellercontroller.updatecontent);
 
-router.post('/deletegig',updatevalidatDleletegig, authentication, sellercontroller.deletegig);
+router.post('/deletegig',updatevalidatpause, authentication, sellercontroller.deletegig);
 
 
 router.post('/pausegigs',updatevalidatDleletegig, authentication, sellercontroller.pausegigs);

@@ -323,6 +323,36 @@ const updatevalidatDleletegig = (req, res, next) => {
   next();
 };
 
+
+const activegig = Joi.object({
+  id: Joi.number().required(),
+  is_open: Joi.string().valid(1).required() 
+});
+
+const updatevalidatactive = (req, res, next) => {
+  const { error } = activegig.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  next();
+};
+
+const deletegigidss = Joi.object({
+  id: Joi.string().required(),
+  is_deleted: Joi.string().valid(1).required() 
+});
+
+const updatevalidatpause = (req, res, next) => {
+  const { error } = deletegigidss.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  }
+
+  next();
+};
 module.exports = {
   validatevalue,
   validatecategory,
@@ -339,5 +369,7 @@ module.exports = {
   createOffer,
   vaildatebuyer,
   updatevalidategigs,
-  updatevalidatDleletegig
+  updatevalidatDleletegig,
+  updatevalidatpause,
+  updatevalidatactive
 };
