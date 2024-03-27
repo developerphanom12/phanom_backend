@@ -51,6 +51,7 @@ router.post('/deletegig',updatevalidatpause, authentication, sellercontroller.de
 
 router.post('/pausegigs',updatevalidatDleletegig, authentication, sellercontroller.pausegigs);
 
+router.put('/imageUploadUpdate/:id', authentication,upload.fields([{ name: 'image1' }, { name: 'image2' },{ name: 'image3' }, { name: 'vedio' }]), sellercontroller.updategigImages);
 
 module.exports = router;
 

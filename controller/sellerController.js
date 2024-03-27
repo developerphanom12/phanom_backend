@@ -1041,6 +1041,58 @@ const pausegigs = async (req, res) => {
   }
 };
 
+
+
+
+const updategigImages = async (req, res) => {
+  const id = req.params.id;
+console.log("idfdd",id)
+  if (req.user.role !== "seller") {
+    return res
+      .status(403)
+      .json({ status: 403, error: "Forbidden for regular users" });
+  }
+
+  const { image1, image2, image3, vedio } = req.files;
+
+  const image1Filename = image1 ? image1[0].filename : null;
+  const image2Filename = image2 ? image2[0].filename : null;
+  const image3Filename = image3 ? image3[0].filename : null;
+  const vedioFilename = vedio ? vedio[0].filename : null;
+
+  const updatedUserData = {
+    image1: image1Filename,
+    image2: image2Filename,
+    image3: image3Filename,
+    vedio: vedioFilename,
+  };
+
+
+  try {
+    const catId = await sellerService.checkGigidinImageTable(id);
+    if (!catId) {
+      return res
+        .status(404)
+        .json({ status: 404, message: "id not found" });
+    }
+
+    const userid = await sellerService.updateImageContent(id,updatedUserData);
+
+    res.status(201).json({
+      message: "Data added successfully",
+      status: 201,
+      data: userid,
+    });
+  } catch (error) {
+    console.error("Error in add video images:", error);
+    res.status(500).json({
+      status: 500,
+      error: "Failed to add video images",
+      message: error.message,
+      stack: error.stack,
+    });
+  }
+};
 module.exports = {
   createseller,
   addgigadata,
@@ -1063,6 +1115,7 @@ module.exports = {
   updateplantype,
   updatecontent,
   deletegig,
-  pausegigs
+  pausegigs,
+  updategigImages
   
 };

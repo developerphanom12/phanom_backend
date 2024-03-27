@@ -1498,6 +1498,85 @@ function pausegigsadd (is_open, id, callback){
   }
 };
 
+
+
+function checkGigidinImageTable(gig_id) {
+  return new Promise((resolve, reject) => {
+    const query = "SELECT * FROM gigs_imagedata WHERE id = ?";
+    db.query(query, [gig_id], (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results.length > 0 ? results[0] : null);
+      }
+    });
+  });
+}
+
+
+
+const updateImageContent = async (id, updatedUserData) => {
+  try {
+    const {
+      image1,
+      image2,
+      image3,
+      vedio,
+     
+    } = updatedUserData;
+
+    const updateQuery = `
+      UPDATE gigs_imagedata u
+      SET 
+          u.image1 = COALESCE(?, u.image1),
+          u.image2 = COALESCE(?, u.image2),
+          u.image3 = COALESCE(?, u.image3),
+          u.vedio = COALESCE(?, u.vedio)
+      WHERE u.id = ?;
+    `;
+const values =[image1,image2,image3,vedio,id]
+    const updateResult = await new Promise((resolve, reject) => {
+      db.query(
+        updateQuery,values,  (updateError, updateResult) => {
+          if (updateError) {
+            reject(updateError);
+          } else {
+            resolve(updateResult);
+          }
+        }
+      );
+    });
+
+    if (updateResult.affectedRows > 0) {
+      const fetchQuery = `
+        SELECT * FROM gigs_imagedata u
+        WHERE u.id = ?;
+      `;
+
+      const fetchResult = await new Promise((resolve, reject) => {
+        db.query(fetchQuery, [id], (fetchError, fetchResult) => {
+          if (fetchError) {
+            reject(fetchError);
+          } else {
+            resolve(fetchResult);
+          }
+        });
+      });
+
+      if (fetchResult.length > 0) {
+        return fetchResult[0];
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error updating gig plantype:", error);
+    throw new Error("Failed to update gig plantype data");
+  }
+};
+
 module.exports = {
   sellergister,
   checkusername,
@@ -1531,5 +1610,7 @@ module.exports = {
   updateplantypedata,
   updateContents,
   deletegig,
-  pausegigsadd
+  pausegigsadd,
+  checkGigidinImageTable,
+  updateImageContent
 };
