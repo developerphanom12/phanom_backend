@@ -997,6 +997,50 @@ const deletegig = async (req, res) => {
 };
 
 
+
+const pausegigs = async (req, res) => {
+  const { id, is_open } = req.body;
+
+  try {
+    if (req.user.role !== "seller") {
+      throw {
+        status: 403,
+        error: "Forbidden. Only seller can activate gig.",
+      };
+    }
+
+    if (is_open !== 0) {
+      throw {
+        status: 400,
+        error: "Invalid is_open value. It must  1.",
+      };
+    }
+
+    sellerService.pausegigsadd(is_open, id, (error, result) => {
+      if (error) {
+        console.error("Error to pause  gig:", error);
+        throw {
+          status: 500,
+          error: "Failed to pause  gig.",
+        };
+      }
+
+      res.status(201).json({
+        status: 201,
+        data: result,
+      });
+    });
+  }catch (error) {
+    console.error("Error to get data:", error);
+    res.status(500).json({
+      status: 500,
+      error: "failed to activate gig data ",
+      message: error.message,
+      stack: error.stack,
+    });
+  }
+};
+
 module.exports = {
   createseller,
   addgigadata,
@@ -1018,6 +1062,7 @@ module.exports = {
   updateGigController,
   updateplantype,
   updatecontent,
-  deletegig
+  deletegig,
+  pausegigs
   
 };

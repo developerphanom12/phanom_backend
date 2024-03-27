@@ -49,5 +49,8 @@ router.put('/updateContent/:id', authentication, sellercontroller.updatecontent)
 router.post('/deletegig',updatevalidatDleletegig, authentication, sellercontroller.deletegig);
 
 
+router.post('/pausegigs',updatevalidatDleletegig, authentication, sellercontroller.pausegigs);
+
+
 module.exports = router;
 
