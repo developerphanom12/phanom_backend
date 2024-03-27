@@ -462,7 +462,7 @@ function listgigsdata(gigId) {
           gw.create_date,
           gw.update_date,
           gp.id AS content_id,
-          gp.gig_id,
+          gp.gig_id AS GIGIGIGIGIG,
           gp.image1,
           gp.image2,
           gp.image3,
@@ -531,10 +531,10 @@ function listgigsdata(gigId) {
               },
               images: {
                 content_id: result.content_id,
-                gig_id: result.gig_id,
+                GIGIGIGIGIG: result.GIGIGIGIGIG,
                 image1: result.image1,
-                image2: result.image1,
-                image3: result.image1,
+                image2: result.image2,
+                image3: result.image3,
                 vedio: result.vedio,
               },
             });

@@ -48,7 +48,6 @@ router.put('/updateContent/:id', authentication, sellercontroller.updatecontent)
 
 router.post('/deletegig',updatevalidatpause, authentication, sellercontroller.deletegig);
 
-
 router.post('/pausegigs',updatevalidatDleletegig, authentication, sellercontroller.pausegigs);
 
 router.put('/imageUploadUpdate/:id', authentication,upload.fields([{ name: 'image1' }, { name: 'image2' },{ name: 'image3' }, { name: 'vedio' }]), sellercontroller.updategigImages);
