@@ -1093,6 +1093,7 @@ console.log("idfdd",id)
     });
   }
 };
+
 module.exports = {
   createseller,
   addgigadata,
@@ -1117,5 +1118,4 @@ module.exports = {
   deletegig,
   pausegigs,
   updategigImages
-  
 };

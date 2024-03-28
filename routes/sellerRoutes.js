@@ -42,7 +42,7 @@ router.get('/gigsdatatat', authentication, sellercontroller.checktellereport);
 
 router.put('/updategigsdata/:id', authentication, sellercontroller.updateGigController);   
 
-router.put('/updategigsplantypedata/:id',updatevalidategigs, authentication, sellercontroller.updateplantype);
+router.put('/updategigsplantypedata/:id', authentication, sellercontroller.updateplantype);
 
 router.put('/updateContent/:id', authentication, sellercontroller.updatecontent);
 
